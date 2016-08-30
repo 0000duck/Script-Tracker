@@ -3,10 +3,10 @@ script_tracker_web_page:
   debug: false
   events:
     on get request:
-    - if <context.request.starts_with[/scripts].not> queue clear
+    - if <context.request.starts_with[/tracker]> queue clear
     - determine passively "code:200"  
     - determine passively "type:text/html"
-    - choose <context.request.after[/scripts/]||none>:
+    - choose <context.request.after[/]||none>:
       - case popular:
         - inject s@script_tracker_web_page_popular
       - case script:
