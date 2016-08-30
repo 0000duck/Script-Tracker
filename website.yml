@@ -30,7 +30,7 @@ website_pages:
                     return;
                 }
                 query = "?script=" + script;
-                window.location.replace("http://morphanone.space:10123/scripts/script" + query);
+                window.location.replace("http://morphanone.space:10123/script" + query);
             }
         </script>
         <nav class="navbar navbar-default navbar-fixed-top">
