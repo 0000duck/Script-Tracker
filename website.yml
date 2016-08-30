@@ -1,0 +1,210 @@
+script_tracker_web_page:
+  type: world
+  debug: false
+  events:
+    on get request:
+    - if <context.request.starts_with[/scripts].not> queue clear
+    - determine passively "code:200"  
+    - determine passively "type:text/html"
+    - choose <context.request.after[/scripts/]||none>:
+      - case popular:
+        - inject s@script_tracker_web_page_popular
+      - case script:
+        - inject s@script_tracker_web_page_script
+      - default:
+        - inject s@script_tracker_web_page_homepage
+website_pages:
+  type: yaml data
+  search_bar:         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <style>
+            body {
+                min-height<{&co}> 2000px;
+                padding-top<{&co}> 70px;
+            }
+        </style>
+        <script>
+            function dosearch() {
+                script = document.getElementById("scriptsearch").value;
+                if (script == "") {
+                    alert("No script specified!");
+                    return;
+                }
+                query = "?script=" + script;
+                window.location.replace("http://morphanone.space:10123/scripts/script" + query);
+            }
+        </script>
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div class="container">
+                <div id="navbar" class="navbar-collapse collapse">
+                    <div class="row">
+                        <div class="col-md-2"></div>
+                        <div class="col-md-6">
+                            <input class="form-control" type="text" id="scriptsearch" placeholder="Enter Script">
+                        </div>
+                        <div class="col-md-2">
+                            <input class="btn btn-primary" id="dosearch" type="button" value="Search" onclick="dosearch()">
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+  homepage: <!doctype html>
+      <html>
+          <head>
+              <title>
+              Script Tracker
+              </title>
+          </head>
+          <body>
+            <{def[searchbar]}>
+          </body>
+      </html>
+  scriptpage: <!doctype html>
+      <html>
+          <head>
+              <title>
+              Script Tracker
+              </title>
+          </head>
+          <body>
+              <{def[searchbar]}><br>
+              <p>
+              Script<{&co}> <{def[title]}><br>
+              Author<{&co}> <{def[author]}><br>
+              Public data<{&co}> <{def[public_data]}><br>
+              </p>
+              <img src='url1'>
+          </body>
+      </html>
+  404page: <!doctype html>
+      <html>
+          <head>
+              <title>
+              Script Tracker
+              </title>
+          </head>
+          <body>
+              <{def[searchbar]}>
+              Mate you typed something wrong there, try again yo
+          </body>
+      </html>
+script_tracker_web_page_homepage:
+  type: task
+  debug: false
+  script:
+  - define page <s@website_pages.yaml_key[search_bar]>
+  - inject s@parse_tags_in_html
+  - define searchbar <def[page]>
+  - define page <s@website_pages.yaml_key[homepage]>
+  - inject s@parse_tags_in_html
+  - determine "<def[page]>"
+script_tracker_web_page_popular:
+  type: task
+  debug: false
+  script:
+    - if <server.has_flag[script_tracker.caching.popular.<util.date.time.hour>].not> || true {
+      - flag server script_tracker.caching.popular.<util.date.time.hour>:!
+      - flag server script_tracker.caching.popular.<util.date.time.hour>:|:<proc[popular_scripts]> duration:1h
+      }
+    - define scripts <server.flag[script_tracker.caching.popular.<util.date.time.hour>].as_list.get[1].to[100]||li@>
+    - if <def[scripts].size> == 0 {
+      - determine "I currently do not have any scripts tracked."
+      }
+    - define list li@
+    - foreach <def[scripts]> {
+      - define currentstring "%loop_index%. <def[value].after[/].substring[1,25].unescaped> (<def[value].before[/]>)"
+      - define list "<def[list].include[<def[currentstring]>]>"
+      }
+    - determine "<def[list].separated_by[<&lt>br<&gt>]||null>"
+script_tracker_web_page_script:
+  type: task
+  debug: false
+  script:
+  #
+    # get all the date from the query
+    #
+    - define query <context.query.split_by[&]>
+    - define script <def[query].map_get[script].split_by[=].replace[<&pc>20].with[<&sp>]||none>
+    - define scriptdata <proc[script_info].context[<def[script]>]>
+    - if <def[scriptdata].get[1]||null> == null {
+      - define page <s@website_pages.yaml_key[search_bar]>
+      - inject s@parse_tags_in_html
+      - define searchbar <def[page]>
+      - define page <s@website_pages.yaml_key[404page]>
+      - inject s@parse_tags_in_html
+      - determine <def[page]>
+      }
+    - define script <def[scriptdata].get[5]>
+    - define title <def[scriptdata].get[1]>
+    - define author <def[scriptdata].get[2]>
+    - define public_data <def[scriptdata].get[6]||null>
+    - define public_data <def[public_data].formatted||none>
+    - define days <def[query].map_get[days].split_by[=]||10>
+    - define data <def[query].map_get[data].split_by[=]||script>
+    - define mode <def[query].map_get[mode].split_by[=]||add>
+    - define datavalue <def[query].map_get[datavalue].split_by[=]||none>
+    #
+    #get a list of duration stamps that represent the log files requested
+    #
+    - define timestamp <util.date.time.duration.sub[d@<util.date.time.hour>h].sub[d@<util.date.time.minute>m].sub[d@<util.date.time.second>s]>
+    - define filelist li@<def[timestamp].in_ticks>
+    - repeat <def[days].sub[1].as_int>:
+      - define newtimestamp <def[timestamp].sub[d@<def[value]>d].in_ticks>
+      - define filelist <def[filelist].include[<def[newtimestamp]>]>
+    - define filelist <def[filelist].reverse>
+    #
+    # get the data in a list
+    #
+    - define presented_data li@
+    - foreach <def[filelist]>:
+      - define currentfile <def[value]>
+      - if <yaml.list.contains[<def[currentfile]>].not> {
+        - if <server.has_file[/script_tracker/<def[currentfile]>.yml]> {
+          - yaml "load:/script_tracker/<def[currentfile]>.yml" id:<def[currentfile]>
+          } else {
+          - define presented_data <def[presented_data].include[li@0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0|0]>
+          # - debug error "could not find <def[currentfile]>"
+          - foreach next
+          }
+        }
+      - repeat 24:
+        - define hour <def[value].sub[1].as_int>
+        - if <def[mode]> == add {
+          - if <def[data]> == script {
+            - define amount <yaml[<def[currentfile]>].list_keys[data.<def[hour]>.<def[script]>].size||0>
+            } else {
+            - define amount 0
+            - foreach <yaml[<def[currentfile]>].list_keys[data.<def[hour]>.<def[script]>]||li@> {
+              - if <def[datavalue]> == none {
+                - define amount <def[amount].add[<yaml[<def[currentfile]>].read[data.<def[hour]>.<def[script]>.<def[value]>.<def[data]>].unescaped||0>].as_int||0>
+                } else {
+                - define currentdatavalue <yaml[<def[currentfile]>].read[data.<def[hour]>.<def[script]>.<def[value]>.<def[data]>].unescaped||0>
+                - if <def[datavalue]> == <def[currentdatavalue]> {
+                  - define amount <def[amount].add[1].as_int||0>
+                  }
+                }
+              }
+            }
+          - define presented_data <def[presented_data].include[<def[amount]>]>
+          }
+    # generate labels for the graph
+    - define labels "Future,Today"
+    - repeat <def[days].sub[1].as_int> {
+      - define duration <util.date.time.duration.sub[<el@val[86400].mul[%value%]>]>
+      - define labels "%labels%,<def[duration].time.day>/<def[duration].time.month>"
+      }
+    - define page <s@website_pages.yaml_key[search_bar]>
+    - inject s@parse_tags_in_html
+    - define searchbar <def[page]>
+    # send page
+    - define page <s@website_pages.yaml_key[scriptpage]>
+    - inject s@parse_tags_in_html
+    - determine "<def[page].replace[url1].with[http<&co>//neo.mcmonkey.org/graph_api/graph_line.png?title=<def[script]>&show_points=false&width=1000&Height=500&xtitle=Days&ytitle=Amount&1&xnotches=1&xsteps=0.04166&max=<def[presented_data].numerical.last.max[1].as_int||1>&values=<def[presented_data].separated_by[,]>&xend=<def[days]>&xstart=0&match_xsteps=true&xlabels=%labels%]>"
+parse_tags_in_html:
+  type: task
+  debug: false
+  script:
+  - define page <def[page].escaped||null>
+  - define page <parse:<def[page].replace[&lt<&lc>].with[<&lt>].replace[<&rc>&gt].with[<&gt>].replace[&dot].with[.].replace[&amp].with[&].replace[&at].with[<&at>].replace[&lb].with[<&lb>].replace[&rb].with[<&rb>].replace[&pipe].with[<&pipe>]||null>>
+  - define page <def[page].unescaped||null>

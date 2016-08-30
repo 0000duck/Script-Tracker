@@ -1,0 +1,182 @@
+script_tracker:
+  type: world
+  debug: false
+  events:
+    on server start:
+    - wait 2t
+    - web start port:10123
+    - ~run reload_script_database
+    on GET request:
+    - if <context.request.starts_with[/tracker].not> queue clear
+    - define address <context.address.escaped>
+    - define arguments <context.query.substring[1,2500].escaped.split_by[&amp].get[1].to[25]||null>
+    #if no arguments are specified at all
+    - if <def[arguments]> == null {
+      - determine passively "FAILURE! No data found! <&co>("
+      - queue clear
+      }
+    - define script <def[arguments].map_get[script].split_by[=]||null>
+    #if the script argument is not specified
+    - if <def[script]> == null {
+      - determine passively "FAILURE! No script specified! <&co>("
+      - queue clear
+      }
+    # if the script is not a valid integer - not an ID
+    - if <def[script].as_int||none> == none {
+      - determine passively "FAILURE! You must specify the ID of the script, instead of the name! (EG<&co> script=54&author=theblackcoyote)"
+      - queue clear
+      }
+    # if the script is on the local script database copied from the repository
+    - if <yaml[scripttable].contains[script_tracker.scriptinfo.<def[script]>].not||true> {
+      - determine passively "FAILURE! This script ID does not match our database."
+      - queue clear
+      }
+    # if the script from this server is on cooldown
+    - if <server.has_flag[script_tracker.cooldowns.<def[script]>.<def[address]>]> {
+      - determine passively "FAILURE! don't force feed me!"
+      - queue clear
+      } else {
+      - flag server "script_tracker.cooldowns.<def[script]>.<def[address]>:true" duration:10m
+      }
+    - if <server.flag[script_tracker.cooldowns.<def[script]>.<def[address].before[&co]>]||0> > 5 {
+      - determine passively "FAILURE! don't force feed me!"
+      - queue clear
+      } else {
+      - flag server "script_tracker.cooldowns.<def[script]>.<def[address].before[&co]>:++" duration:10m
+      }
+    #
+    # success! time to store all this data
+    #
+    - determine passively "SUCCESS! We successfully recieved your data. Thank your for your contribution."
+    #put the script's passed data in the database
+    - define ID <util.date.time.duration.sub[d@<util.date.time.hour>h].sub[d@<util.date.time.minute>m].sub[d@<util.date.time.second>s].in_ticks>
+    - if <yaml.list.contains[%id%].not> {
+      - if <server.has_file[/script_tracker/%id%.yml]> {
+        - yaml "load:/script_tracker/%id%.yml" id:%id%
+        } else {
+        - yaml create id:%id%
+        }
+      }
+    - define hour <util.date.time.hour>
+    - define key "data.<def[hour]>.<def[script]>.<def[address]>"
+    - foreach <def[arguments]>:
+      - define data <def[value].before[=]||null>
+      - define value <def[value].after[=]||null>
+      - yaml id:%id% set <def[key]>.<def[data]>:<def[value]>
+    - yaml id:%id% "savefile:/script_tracker/%id%.yml"
+    on system time hourly:
+    - wait 2m
+    - flag server script_tracker.caching.popular.<util.date.time.hour>:!
+    - flag server script_tracker.caching.popular.<util.date.time.hour>:|:<proc[popular_scripts]> duration:2h
+reload_script_database:
+  type: task
+  speed: 0
+  debug: false
+  script:
+    - if <yaml.list> !contains scripttable {
+      - yaml create id:scripttable
+      }
+    - yaml id:scripttable set script_tracker:!
+    - while true:
+      - define script <def[loop_index].sub[1].as_int>
+      - ~webget "http://old.mcmonkey.org/denizen/repo/entry/<def[script]>" save:return
+      - define scripttitle "<entry[return].result.escaped.after[&lttitle&gt].before[ by ]||null>"
+      - define scriptauthor "<entry[return].result.escaped.after[ by ].before[ ]||null>"
+      - if <def[scripttitle]> == null || "<def[scripttitle].starts_with[Invalid paste number]>" {
+        - while stop
+        }
+      - yaml id:scripttable set script_tracker.scriptinfo.<def[script]>.name:<def[scripttitle]>
+      - yaml id:scripttable set script_tracker.scriptinfo.<def[script]>.author:<def[scriptauthor]>
+      - yaml id:scripttable set script_tracker.nametable.<def[scripttitle]>.id:<def[script]>
+      - if <yaml[scripttable].read[script_tracker.authortable.<def[scriptauthor]>]||li@> !contains <def[script]> {
+        - yaml id:scripttable set script_tracker.authortable.<def[scriptauthor]>:->:<def[script]>
+        }
+      - define script_tracker_args <entry[return].result.after[&lt<&sc>--script-tracker--&gt<&sc>].before[&lt<&sc>--!script-tracker--&gt<&sc>].escaped.split_by[&ltbr&gt]||null>
+      - if <def[script_tracker_args].size||0> > 0 {
+        - define public_data <def[script_tracker_args].map_get[public_data].split_by[=]||null>
+        - if <def[public_data]> != null && <def[public_data]> != "" {
+          - yaml id:scripttable set script_tracker.scriptinfo.<def[script]>.public_data:!
+          - yaml id:scripttable set script_tracker.scriptinfo.<def[script]>.public_data:|:<def[public_data].split_by[,]>
+          }
+        }
+      - wait 1t
+#
+#
+#
+#
+#
+#
+#
+popular_scripts:
+  type: procedure
+  debug: false
+  script:
+  - define hour <util.date.time.hour||0>
+  - if <def[hour]> <= 1 {
+    - define ID <util.date.time.duration.sub[d@1d].sub[d@<def[hour]>h].sub[d@<util.date.time.minute>m].sub[d@<util.date.time.second>s].in_ticks>
+    - define hour 23
+    } else {
+    - define ID <util.date.time.duration.sub[d@<def[hour]>h].sub[d@<util.date.time.minute>m].sub[d@<util.date.time.second>s].in_ticks>
+    - define hour <def[hour].sub[1].as_int>
+    }
+  - if <yaml.list.contains[%id%].not> {
+    - if <server.has_file[/script_tracker/%id%.yml]> {
+      - yaml "load:/script_tracker/%id%.yml" id:%id%
+      } else {
+      - yaml create id:%id%
+      }
+    }
+  - define scripts <yaml[%id%].list_keys[data.%hour%]||li@>
+  - define list li@
+  - foreach <def[scripts]>:
+    - define name <yaml[scripttable].read[script_tracker.scriptinfo.<def[value]>.name].unescaped||<def[value]>>"
+    - define list <def[list].include[<yaml[%id%].list_keys[data.<def[hour]>.<def[value]>].size||0>/<def[name]>]||<def[list]>>
+  - determine <def[list].alphanumeric.reverse||li@>
+script_info:
+  type: procedure
+  script:
+  - define script <def[1]||null>
+  - if <def[script]> == null {
+    - determine null
+    }
+  - if <def[script]> matches number {
+    - define id <def[script]>
+    } else {
+    - if <yaml[scripttable].contains[script_tracker.nametable.<def[script].escaped>]> {
+      - define id <yaml[scripttable].read[script_tracker.nametable.<def[script].escaped>.id]||null>
+      } else if <yaml[scripttable].list_keys[script_tracker.nametable].filter[starts_with[<def[script].escaped>]].size||0> > 0 {
+      - define id <yaml[scripttable].read[script_tracker.nametable.<yaml[scripttable].list_keys[script_tracker.nametable].filter[starts_with[<def[script].escaped>]].sort_by_number[length].first||null>.id]||null>
+      } else if <yaml[scripttable].list_keys[script_tracker.nametable].filter[contains[<def[script].escaped>]].size||0> > 0 {
+      - define id <yaml[scripttable].read[script_tracker.nametable.<yaml[scripttable].list_keys[script_tracker.nametable].filter[contains[<def[script].escaped>]].sort_by_number[length].first||null>.id]||null>
+      } else {
+      - determine null
+      }
+    }
+  - if <def[id]> == null {
+    - determine null
+    }
+  - if <yaml[scripttable].contains[script_tracker.scriptinfo.<def[id]>].not||true> {
+    - determine null
+    }
+  - define hour <util.date.time.hour>
+  - if <def[hour]> <= 1 {
+    - define yaml <util.date.time.duration.sub[d@1d].sub[d@<def[hour]>h].sub[d@<util.date.time.minute>m].sub[d@<util.date.time.second>s].in_ticks>
+    - define hour 23
+    } else {
+    - define yaml <util.date.time.duration.sub[d@<def[hour]>h].sub[d@<util.date.time.minute>m].sub[d@<util.date.time.second>s].in_ticks>
+    - define hour <def[hour].sub[1].as_int>
+    }
+  - define url "http<&co>//old.mcmonkey.org/denizen/repo/entry/<def[id]>"
+  - define title "<yaml[scripttable].read[script_tracker.scriptinfo.<def[id]>.name].unescaped||unknown>"
+  - define author "<yaml[scripttable].read[script_tracker.scriptinfo.<def[id]>.author].unescaped||unknown>"
+  - define public_data "<yaml[scripttable].read[script_tracker.scriptinfo.<def[id]>.public_data].unescaped||null>"
+  - define used "<yaml[%yaml%].list_keys[data.%hour%.%ID%].size||<yaml[%yaml%].list_keys[data.<def[hour].sub[1].as_int||0>.%ID%].size||0>>"
+  - determine "li@<def[title].escaped>|<def[author].escaped>|<def[url].escaped>|<def[used]>|<def[id]>|<def[public_data].escaped||null>"
+author_info:
+  type: procedure
+  script:
+  - define author <def[1]||null>
+  - if <def[author]> == null {
+    - determine null
+    }
+  - determine <yaml[scripttable].read[script_tracker.authortable.<def[author].escaped>].as_list||li@>
