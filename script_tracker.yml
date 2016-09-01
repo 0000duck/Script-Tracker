@@ -4,7 +4,7 @@ script_tracker:
   events:
     on server start:
     - wait 2t
-    - web start port:10123
+    - web start port:8099
     - ~run reload_script_database
     on GET request:
     - if <context.request.starts_with[/tracker].not> queue clear
