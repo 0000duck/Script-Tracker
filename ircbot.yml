@@ -116,7 +116,7 @@ IRCBOT:
         - ~run reload_script_database
         - define message "Reloaded database. I now know of <&b><yaml[scripttable].list_keys[script_tracker.scriptinfo].size> <&%colour%>scripts from <&b><yaml[scripttable].list_keys[script_tracker.authortable].size> <&%colour%>authors."
       - case howto:
-        - define message "To start listing your own script, simply follow the explanation on http<&co>//mcmonkey.org/haste/34880."
+        - define message "To start listing your own script, simply follow the explanation on http<&co>//one.denizenscript.com/haste/35718."
       - case help:
         - define message "I know of these commands<&co> +popular, +script (script), +author (author), +howto, and +help"
     - mark finish
