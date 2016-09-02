@@ -20,7 +20,8 @@ script_tracker_web_page:
 
 website_pages:
   type: yaml data
-  search_bar:         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  search_bar: |
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
         <style>
             body {
                 min-height<{&co}> 2000px;
@@ -54,7 +55,8 @@ website_pages:
                 </div>
             </div>
         </nav>
-  homepage: <!doctype html>
+  homepage: |
+      <!doctype html>
       <html>
           <head>
               <title>
@@ -65,7 +67,8 @@ website_pages:
             <{def[searchbar]}>
           </body>
       </html>
-  scriptpage: <!doctype html>
+  scriptpage: |
+      <!doctype html>
       <html>
           <head>
               <title>
@@ -82,7 +85,8 @@ website_pages:
               <img src='url1'>
           </body>
       </html>
-  404page: <!doctype html>
+  404page: |
+      <!doctype html>
       <html>
           <head>
               <title>
@@ -94,7 +98,8 @@ website_pages:
               Mate you typed something wrong there, try again yo
           </body>
       </html>
-  popularpage: <!doctype html>
+  popularpage: |
+      <!doctype html>
       <html>
           <head>
               <title>
@@ -111,8 +116,9 @@ website_pages:
                 </tbody>
             </table>
           </body>
-    </html>
-  popular_table_row: <tr id="script-list-item"> <td style="text-align<{&co}> center;"><b><{def[rank]}></b> </td> <td style="text-align<{&co}> center;"> <a href="/script?script=<{def[ID]}>" target="_blank"><b><{def[script]}></b></a> </td> <td style="text-align<{&co}> center;"> <b><{def[servers]}></b> </td> </tr>
+      </html>
+  popular_table_row: |
+    <tr id="script-list-item"> <td style="text-align<{&co}> center;"><b><{def[rank]}></b> </td> <td style="text-align<{&co}> center;"> <a href="/script?script=<{def[ID]}>" target="_blank"><b><{def[script]}></b></a> </td> <td style="text-align<{&co}> center;"> <b><{def[servers]}></b> </td> </tr>
 
   
   
