@@ -13,6 +13,11 @@ script_tracker_web_page:
         - inject s@script_tracker_web_page_script
       - default:
         - inject s@script_tracker_web_page_homepage
+
+
+
+
+
 website_pages:
   type: yaml data
   search_bar:         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -89,6 +94,51 @@ website_pages:
               Mate you typed something wrong there, try again yo
           </body>
       </html>
+  testpage: <!doctype html>
+      <html>
+          <head>
+              <title>
+              Script Tracker
+              </title>
+          </head>
+          <body>
+            <table class="table table-bordered table-condensed data-table" id="script-list">
+                <thead>
+                    <tr> <th style="text-align<{&co}> center; width<{&co}> 15%;">Rank</th> <th style="text-align<{&co}> center; width<{&co}> 170px;">script</th> <th style="text-align<{&co}> center; width<{&co}> 70px;">Servers</th> </tr>
+                </thead>
+                <tbody>
+                  <{def[table_contents]}>
+                </tbody>
+            </table>
+          </body>
+    </html>
+  popular_table_row: <tr id="script-list-item"> <td style="text-align<{&co}> center;"><b><{def[rank]}></b> </td> <td style="text-align<{&co}> center;"> <a href="/script?script=<{def[ID]}>" target="_blank"><b><{def[script]}></b></a> </td> <td style="text-align<{&co}> center;"> <b><{def[servers]}></b> </td> </tr>
+
+  
+  
+script_tracker_web_page_popular:
+  type: task
+  debug: false
+  script:
+  - define page <s@website_pages.yaml_key[search_bar]>
+  - inject s@parse_tags_in_html
+  - define searchbar <def[page]>
+  - define table_contents ""
+  - foreach <proc[popular_scripts_by_id]>:
+    - define ID <def[value].after[/].substring[1,50].unescaped>
+    - define script <yaml[scripttable].read[script_tracker.scriptinfo.<def[ID]>.name].unescaped||<def[value]>>"
+    - define servers <def[value].before[/]>
+    - define rank <def[loop_index]>
+    - define page <s@website_pages.yaml_key[popular_table_row]>
+    - inject s@parse_tags_in_html
+    - define table_contents "<def[table_contents]><def[page]>"
+  - define page <s@website_pages.yaml_key[testpage]>
+  - inject s@parse_tags_in_html
+  - determine "<def[page]>"
+
+
+
+
 script_tracker_web_page_homepage:
   type: task
   debug: false
@@ -99,24 +149,11 @@ script_tracker_web_page_homepage:
   - define page <s@website_pages.yaml_key[homepage]>
   - inject s@parse_tags_in_html
   - determine "<def[page]>"
-script_tracker_web_page_popular:
-  type: task
-  debug: false
-  script:
-    - if <server.has_flag[script_tracker.caching.popular.<util.date.time.hour>].not> || true {
-      - flag server script_tracker.caching.popular.<util.date.time.hour>:!
-      - flag server script_tracker.caching.popular.<util.date.time.hour>:|:<proc[popular_scripts]> duration:1h
-      }
-    - define scripts <server.flag[script_tracker.caching.popular.<util.date.time.hour>].as_list.get[1].to[100]||li@>
-    - if <def[scripts].size> == 0 {
-      - determine "I currently do not have any scripts tracked."
-      }
-    - define list li@
-    - foreach <def[scripts]> {
-      - define currentstring "%loop_index%. <def[value].after[/].substring[1,25].unescaped> (<def[value].before[/]>)"
-      - define list "<def[list].include[<def[currentstring]>]>"
-      }
-    - determine "<def[list].separated_by[<&lt>br<&gt>]||null>"
+
+
+
+
+
 script_tracker_web_page_script:
   type: task
   debug: false
@@ -201,10 +238,15 @@ script_tracker_web_page_script:
     - define page <s@website_pages.yaml_key[scriptpage]>
     - inject s@parse_tags_in_html
     - determine "<def[page].replace[url1].with[http<&co>//neo.mcmonkey.org/graph_api/graph_line.png?title=<def[script]>&show_points=false&width=1000&Height=500&xtitle=Days&ytitle=Amount&1&xnotches=1&xsteps=0.04166&max=<def[presented_data].numerical.last.max[1].as_int||1>&values=<def[presented_data].separated_by[,]>&xend=<def[days]>&xstart=0&match_xsteps=true&xlabels=%labels%]>"
+
+
+
+
+
 parse_tags_in_html:
   type: task
   debug: false
   script:
   - define page <def[page].escaped||null>
-  - define page <parse:<def[page].replace[&lt<&lc>].with[<&lt>].replace[<&rc>&gt].with[<&gt>].replace[&dot].with[.].replace[&amp].with[&].replace[&at].with[<&at>].replace[&lb].with[<&lb>].replace[&rb].with[<&rb>].replace[&pipe].with[<&pipe>]||null>>
+  - define page <parse:<def[page].replace[&lt<&lc>].with[<&lt>].replace[<&rc>&gt].with[<&gt>].replace[&dot].with[.].replace[&sc].with[<&sc>].replace[&amp].with[&].replace[&at].with[<&at>].replace[&lb].with[<&lb>].replace[&rb].with[<&rb>].replace[&pipe].with[<&pipe>]||null>>
   - define page <def[page].unescaped||null>

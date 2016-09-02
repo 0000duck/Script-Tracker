@@ -132,6 +132,30 @@ popular_scripts:
     - define name <yaml[scripttable].read[script_tracker.scriptinfo.<def[value]>.name].unescaped||<def[value]>>"
     - define list <def[list].include[<yaml[%id%].list_keys[data.<def[hour]>.<def[value]>].size||0>/<def[name]>]||<def[list]>>
   - determine <def[list].alphanumeric.reverse||li@>
+popular_scripts_by_id:
+  type: procedure
+  debug: false
+  script:
+  - define hour <util.date.time.hour||0>
+  - if <def[hour]> <= 1 {
+    - define ID <util.date.time.duration.sub[d@1d].sub[d@<def[hour]>h].sub[d@<util.date.time.minute>m].sub[d@<util.date.time.second>s].in_ticks>
+    - define hour 23
+    } else {
+    - define ID <util.date.time.duration.sub[d@<def[hour]>h].sub[d@<util.date.time.minute>m].sub[d@<util.date.time.second>s].in_ticks>
+    - define hour <def[hour].sub[1].as_int>
+    }
+  - if <yaml.list.contains[%id%].not> {
+    - if <server.has_file[/script_tracker/%id%.yml]> {
+      - yaml "load:/script_tracker/%id%.yml" id:%id%
+      } else {
+      - yaml create id:%id%
+      }
+    }
+  - define scripts <yaml[%id%].list_keys[data.%hour%]||li@>
+  - define list li@
+  - foreach <def[scripts]>:
+    - define list <def[list].include[<yaml[%id%].list_keys[data.<def[hour]>.<def[value]>].size||0>/<def[value]>]||<def[list]>>
+  - determine <def[list].alphanumeric.reverse||li@>
 script_info:
   type: procedure
   script:
