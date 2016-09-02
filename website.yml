@@ -94,7 +94,7 @@ website_pages:
               Mate you typed something wrong there, try again yo
           </body>
       </html>
-  testpage: <!doctype html>
+  popularpage: <!doctype html>
       <html>
           <head>
               <title>
@@ -132,7 +132,7 @@ script_tracker_web_page_popular:
     - define page <s@website_pages.yaml_key[popular_table_row]>
     - inject s@parse_tags_in_html
     - define table_contents "<def[table_contents]><def[page]>"
-  - define page <s@website_pages.yaml_key[testpage]>
+  - define page <s@website_pages.yaml_key[popularpage]>
   - inject s@parse_tags_in_html
   - determine "<def[page]>"
 
