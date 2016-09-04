@@ -60,19 +60,9 @@ IRCBOT:
           - define currentstring "%loop_index%. <&b><def[value].after[/].substring[1,50].unescaped> <&7>(<def[value].before[/]>)<&%colour%>"
           - define list "<def[list].include[<def[currentstring]>]>"
           }
-        - define message "Popular scripts<&co> <def[list].formatted>"
+        - define message "Popular scripts<&co> <def[list].formatted>  -  http<&co>//stats.denizenscript.com/popular"
       - case poopular:
-        - define scripts <proc[popular_scripts].reverse.get[1].to[5]>
-        - if <def[scripts].size> == 0 {
-          - define message "I currently do not have any scripts tracked."
-          - goto finish
-          }
-        - define list li@
-        - foreach <def[scripts]> {
-          - define currentstring "%loop_index%. <&b><def[value].after[/].substring[1,50].unescaped> <&7>(<def[value].before[/]>)<&%colour%>"
-          - define list "<def[list].include[<def[currentstring]>]>"
-          }
-        - define message "Poopular scripts<&co> <def[list].formatted>"
+        - define message "For a complete list, visit<&co> http<&co>//stats.denizenscript.com/popular"
       - case script:
         - define script <def[args].get[2].to[50].space_separated||null>
         - if <def[script]> == null {
