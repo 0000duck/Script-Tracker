@@ -254,7 +254,9 @@ script_tracker_web_page_script:
     # send page
     - define page <s@website_pages.yaml_key[scriptpage]>
     - inject s@parse_tags_in_html
-    - determine "<def[page].replace[url1].with[http<&co>//neo.mcmonkey.org/graph_api/graph_line.png?title=<def[script]>&show_points=false&width=1000&Height=500&xtitle=Days&ytitle=Amount&1&xnotches=1&xsteps=0.04166&max=<def[presented_data].numerical.last.max[1].as_int||1>&values=<def[presented_data].separated_by[,]>&xend=<def[days]>&xstart=0&match_xsteps=true&xlabels=%labels%]>"
+    - define highest <def[presented_data].numerical.last.max[1].as_int||1>
+    - define max <el@10.power[<def[highest].as_int.length>].as_int>
+    - determine "<def[page].replace[url1].with[http<&co>//neo.mcmonkey.org/graph_api/graph_line.png?title=<def[title]>&show_points=false&width=1000&Height=500&xtitle=Days&ytitle=Amount&ynotches=<def[max].div[10].max[1].round||1>&xnotches=1&xsteps=0.04166&max=<def[max]>&values=<def[presented_data].separated_by[,]>&xend=<def[days]>&xstart=0&match_xsteps=true&xlabels=%labels%]>"
 
 
 
