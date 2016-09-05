@@ -79,7 +79,7 @@ reload_script_database:
     - yaml id:scripttable set script_tracker:!
     - while true:
       - define script <def[loop_index].sub[1].as_int>
-      - ~webget "http://old.mcmonkey.org/denizen/repo/entry/<def[script]>" save:return
+      - ~webget "http://one.denizenscript.com/denizen/repo/entry/<def[script]>" save:return
       - define scripttitle "<entry[return].result.escaped.after[&lttitle&gt].before[ by ]||null>"
       - define scriptauthor "<entry[return].result.escaped.after[ by ].before[ ]||null>"
       - if <def[scripttitle]> == null || "<def[scripttitle].starts_with[Invalid paste number]>" {
@@ -190,7 +190,7 @@ script_info:
     - define yaml <util.date.time.duration.sub[d@<def[hour]>h].sub[d@<util.date.time.minute>m].sub[d@<util.date.time.second>s].in_ticks>
     - define hour <def[hour].sub[1].as_int>
     }
-  - define url "http<&co>//old.mcmonkey.org/denizen/repo/entry/<def[id]>"
+  - define url "http<&co>//one.denizenscript.com/denizen/repo/entry/<def[id]>"
   - define title "<yaml[scripttable].read[script_tracker.scriptinfo.<def[id]>.name].unescaped||unknown>"
   - define author "<yaml[scripttable].read[script_tracker.scriptinfo.<def[id]>.author].unescaped||unknown>"
   - define public_data "<yaml[scripttable].read[script_tracker.scriptinfo.<def[id]>.public_data].unescaped||null>"
