@@ -45,6 +45,13 @@ IRCBOT:
           - execute as_server "denizen reload scripts"
           - define message "Reloaded all denizen scripts."
           }
+      - case restart:
+        - if <yaml[small_irc_bot_config].read[config.admins]||li@> !contains <context.speaker.replace[<&chr[000D]>]> {
+          - queue clear
+          } else {
+          - execute as_server "restart"
+          - define message "Reloaded all denizen scripts."
+          }
       - case popular:
         - if <server.has_flag[script_tracker.caching.popular.<util.date.time.hour>].not> || true {
           - flag server script_tracker.caching.popular.<util.date.time.hour>:!
