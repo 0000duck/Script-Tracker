@@ -193,7 +193,7 @@ script_info:
   - define url "http<&co>//one.denizenscript.com/denizen/repo/entry/<def[id]>"
   - define title "<yaml[scripttable].read[script_tracker.scriptinfo.<def[id]>.name].unescaped||unknown>"
   - define author "<yaml[scripttable].read[script_tracker.scriptinfo.<def[id]>.author].unescaped||unknown>"
-  - define public_data "<yaml[scripttable].read[script_tracker.scriptinfo.<def[id]>.public_data].unescaped||null>"
+  - define public_data "<yaml[scripttable].read[script_tracker.scriptinfo.<def[id]>.public_data].unescape_contents||null>"
   - define used "<yaml[%yaml%].list_keys[data.%hour%.%ID%].size||<yaml[%yaml%].list_keys[data.<def[hour].sub[1].as_int||0>.%ID%].size||0>>"
   - determine "li@<def[title].escaped>|<def[author].escaped>|<def[url].escaped>|<def[used]>|<def[id]>|<def[public_data].escaped||null>"
 author_info:

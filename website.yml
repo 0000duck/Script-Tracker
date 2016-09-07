@@ -192,7 +192,7 @@ script_tracker_web_page_script:
     - define script <def[scriptdata].get[5]>
     - define title <def[scriptdata].get[1]>
     - define author <def[scriptdata].get[2]>
-    - define public_data <def[scriptdata].get[6]||null>
+    - define public_data <def[scriptdata].get[6].unescaped||null>
     - define public_data <def[public_data].formatted||none>
     - define days <def[query].map_get[days].split_by[=]||10>
     - define data <def[query].map_get[data].split_by[=]||script>
