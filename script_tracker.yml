@@ -47,7 +47,7 @@ script_tracker:
     #
     # success! time to store all this data
     #
-    - determine passively "SUCCESS! We successfully recieved your data. Thank your for your contribution."
+    - determine passively "SUCCESS! We successfully recieved your data. Thank you for your contribution."
     #put the script's passed data in the database
     - define ID <util.date.time.duration.sub[d@<util.date.time.hour>h].sub[d@<util.date.time.minute>m].sub[d@<util.date.time.second>s].in_ticks>
     - if <yaml.list.contains[%id%].not> {
