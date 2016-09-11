@@ -209,7 +209,7 @@ namespace Script_Tracker
                 return;
             }
             int ID = int.Parse(request.Request.QueryString["script"]);
-            string address = request.Request.RemoteEndPoint.ToString().BeforeLast(":");
+            string address = request.Request.RemoteEndPoint.ToString().BeforeLast(":").Replace(".", "-");
             Script script = GetScript(ID);
             if (script == null)
             {
