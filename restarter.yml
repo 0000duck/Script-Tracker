@@ -1,6 +1,0 @@
-restarter_world:
-  type: world
-  debug: false
-  events:
-    on system time 18:45:
-      - execute as_server "restart"
