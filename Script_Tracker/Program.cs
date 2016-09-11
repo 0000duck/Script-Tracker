@@ -209,7 +209,7 @@ namespace Script_Tracker
                 return;
             }
             int ID = int.Parse(request.Request.QueryString["script"]);
-            string address = request.Request.RemoteEndPoint.ToString().BeforeLast(":").Replace(".", "-"); // this returns the local IP, pls2fix
+            string address = request.Request.RemoteEndPoint.ToString().Replace(".", "-"); // this returns the local IP, pls2fix
             Script script = GetScript(ID);
             if (script == null)
             {
