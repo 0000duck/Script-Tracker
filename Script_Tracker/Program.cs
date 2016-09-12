@@ -158,8 +158,7 @@ namespace Script_Tracker
                 return;
             }
             int ID = int.Parse(request.Request.QueryString["script"]);
-            Console.WriteLine(request.Request.Headers["X-Forwarded-For"].ToString());
-            string address = request.Request.RemoteEndPoint.ToString().Replace(".", "-"); // this returns the local IP, pls2fix
+            string address = request.Request.Headers["X-Forwarded-For"].ToString().Replace(".", "-");
             Script script = GetScript(ID);
             if (script == null)
             {
