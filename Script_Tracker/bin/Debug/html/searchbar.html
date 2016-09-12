@@ -1,0 +1,34 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+<style>
+	body {
+		min-height: 2000px;
+		padding-top: 70px;
+	}
+</style>
+<script>
+	function dosearch() {
+		script = document.getElementById("scriptsearch").value;
+		if (script == "") {
+			alert("No script specified!");
+			return;
+		}
+		query = "?script=" + script;
+		window.location.replace("/scripts" + query);
+	}
+</script>
+<nav class="navbar navbar-default navbar-fixed-top">
+	<div class="container">
+		<div id="navbar" class="navbar-collapse collapse">
+			<div class="row">
+				<div class="col-md-2"></div>
+				<div class="col-md-6">
+					<input class="form-control" type="text" id="scriptsearch" placeholder="Enter Script">
+				</div>
+				<div class="col-md-2">
+					<input class="btn btn-primary" id="dosearch" type="button" value="Search" onclick="dosearch()">
+				</div>
+				<div class="col-md-2"></div>
+			</div>
+		</div>
+	</div>
+</nav>
