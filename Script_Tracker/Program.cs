@@ -50,7 +50,7 @@ namespace Script_Tracker
             });
 
             var listener = new HttpListener();
-
+            //listener.Prefixes.Add("http://localhost:8099/");
             listener.Prefixes.Add("http://*:8099/");
             //listener.Prefixes.Add("http://127.0.0.1:10123/");
 
@@ -63,77 +63,26 @@ namespace Script_Tracker
                 {
                     context = listener.GetContext();
                     context.Response.StatusCode = 200;
-                    if (context.Request.Url.LocalPath.StartsWith("/scripts"))
+                    string page = context.Request.Url.LocalPath.Before("?");
+                    switch (page)
                     {
-                        foreach (Script script in ScriptTable)
-                        {
-                            byte[] data = Encoding.UTF8.GetBytes("script: " + script.ID + "\nname: " + script.Name + "\nauthor: " +
-                                script.Author + "\n\n");
-                            context.Response.OutputStream.Write(data, 0, data.Length);
-                        }
-                    }
-                    else if (context.Request.Url.LocalPath.StartsWith("/tracker"))
-                    {
-                        HandleTrackerInput(context);
-                    }
-                    else if (context.Request.Url.LocalPath.StartsWith("/script"))
-                    {
-                        Script script = GetScript(context.Request.QueryString["script"]);
-                        if (script == null)
-                        {
-                            continue; //add 404 page
-                        }
-                        string searchbar = getsearchbar();
-                        string publicdata = PublicDataAsString(script);
-                        int days;
-                        if (!int.TryParse(context.Request.QueryString["days"], out days))
-                        {
-                            days = 10;
-                        }
-                        string datasearch = context.Request.QueryString["data"];
-                        if (string.IsNullOrWhiteSpace(datasearch))
-                        {
-                            datasearch = "servers";
-                        }
-                        string datavalue = context.Request.QueryString["datavalue"];
-                        if (string.IsNullOrWhiteSpace(datavalue))
-                        {
-                            datavalue = null;
-                        }
-                        string modeinput = context.Request.QueryString["mode"];
-                        ModeEnum mode;
-                        if (!Enum.TryParse(modeinput??"", out mode))
-                        {
-                            mode = ModeEnum.ADD;
-                        }
-                        string graphurl = GetGraphUrl(script, days, datasearch, datavalue, mode);
-                        byte[] data = Encoding.UTF8.GetBytes("<!doctype html><html><head><title>Script Tracker</title></head><body>" + searchbar + "<br><p> Script: " + script.Name + "<br>Author: " + script.Author + "<br>Public data: " + publicdata + "<br><img src='" + graphurl + "'></body></html>");
-                        context.Response.OutputStream.Write(data, 0, data.Length);
-                    }
-                    else if (context.Request.Url.LocalPath.StartsWith("/popular"))
-                    {
-                        byte[] data = Encoding.UTF8.GetBytes("<!doctype html><html><head><title>Script Tracker</title><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" integrity=\"sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7\" crossorigin=\"anonymous\"></head><body><div class=\"container\" style=\"margin-top: 30px\"><div class=\"row\"><div class=\"col-md-8 col-md-offset-2\"><table class=\"table table-bordered table-condensed data-table table-striped\" id=\"script-list\"><thead><tr><th class=\"text-center\">Rank</th><th class=\"text-center\">Script</th><th class=\"text-center\">Servers</th></tr></thead><tbody>");
-                        context.Response.OutputStream.Write(data, 0, data.Length);
-                        List<KeyValuePair<Script, int>> popular = getpopular(999);
-                        int i = 0;
-                        foreach (KeyValuePair<Script, int> current in popular)
-                        {
-                            i++;
-                            Script script = current.Key;
-                            int servers = current.Value;
-                            byte[] data2 = Encoding.UTF8.GetBytes("<tr id=\"script-list-item\"> <td style=\"text-align: center;\"><b>" + i + "</b> </td> <td style=\"text-align: center;\"> <a href=\"/script?script=" + script.ID + "\" target=\"_blank\"><b>" + script.Name + "</b></a> </td> <td style=\"text-align: center;\"> <b>" + servers + "</b> </td> </tr>");
-                            context.Response.OutputStream.Write(data2, 0, data2.Length);
-                        }
-                        byte[] data3 = Encoding.UTF8.GetBytes("</tbody></table></div></div></div></body></html>");
-                        context.Response.OutputStream.Write(data3, 0, data3.Length);
-                    }
+                        case "/tracker":
+                            HandleTrackerInput(context);
+                            break;
+                        case "/scripts":
+                            webPages.getScriptPage(context);
+                            break;
+                        case "/popular":
+                            webPages.getPopularPage(context);
+                            break;
+                     }
                 }
                 catch(Exception ex)
                 {
                     Console.WriteLine(ex.ToString());
                     if (context != null)
                     {
-                        byte[] data = Encoding.UTF8.GetBytes("FAILURE! Unable to process your request.");
+                        byte[] data = Encoding.UTF8.GetBytes("FAILURE! Unable to process your request."); // better 404
                         context.Response.OutputStream.Write(data, 0, data.Length);
                     }
                 }
@@ -200,7 +149,7 @@ namespace Script_Tracker
             ScriptTable = templist;
             return output;
         }
-        static void HandleTrackerInput(HttpListenerContext request)
+        public static void HandleTrackerInput(HttpListenerContext request)
         {
             if (string.IsNullOrWhiteSpace(request.Request.QueryString["script"]))
             {
@@ -209,6 +158,7 @@ namespace Script_Tracker
                 return;
             }
             int ID = int.Parse(request.Request.QueryString["script"]);
+            Console.WriteLine(request.Request.Headers["X-Forwarded-For"].ToString());
             string address = request.Request.RemoteEndPoint.ToString().Replace(".", "-"); // this returns the local IP, pls2fix
             Script script = GetScript(ID);
             if (script == null)
@@ -299,7 +249,7 @@ namespace Script_Tracker
         }
 
 
-        static string PublicDataAsString(Script script)
+        public static string PublicDataAsString(Script script)
         {
             string publicdata = "";
             foreach (string datavalue in script.PublicData)
@@ -358,9 +308,9 @@ namespace Script_Tracker
         }
 
 
-        static string getsearchbar()
+        public static string getsearchbar()
         {
-            string searchbar = "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" integrity=\"sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7\" crossorigin=\"anonymous\"><style>body {min-height: 2000px;padding-top: 70px;}</style><script>function dosearch() { script = document.getElementById(\"scriptsearch\").value;if (script == \"\") { alert(\"No script specified!\");return;}query = \"?script=\" + script; window.location.replace(\"/script\" + query);}</script><nav class=\"navbar navbar-default navbar-fixed-top\"><div class=\"container\"><div id=\"navbar\" class=\"navbar-collapse collapse\"><div class=\"row\"><div class=\"col-md-2\"></div><div class=\"col-md-6\"><input class=\"form-control\" type=\"text\" id=\"scriptsearch\" placeholder=\"Enter Script\"></div><div class=\"col-md-2\"><input class=\"btn btn-primary\" id=\"dosearch\" type=\"button\" value=\"Search\" onclick=\"dosearch()\"></div><div class=\"col-md-2\"></div></div></div></div></nav>";
+            string searchbar = "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" integrity=\"sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7\" crossorigin=\"anonymous\"> <script> function dosearch() { script = document.getElementById(\"script_name\").value; data = document.getElementById(\"data_input\").value; datavalue = document.getElementById(\"data_value\").value; if (script == \"\") { alert(\"No script specified!\"); return; } query = \"?script=\" + script; if (data != \"\") { query = query + \"&data=\" + data; } if (datavalue != \"\") { query = query + \"&datavalue=\" + datavalue; } window.location.replace(\"http://morphanone.space:10123/scripts/script\" + query); } </script> <nav class=\"navbar navbar-default navbar-fixed-top\"> <div class=\"container\" style=\"padding-bottom: 7px\"> <div id=\"navbar\" class=\"navbar-collapse collapse\"> <div class=\"row\"> <div class=\"col-md-10 col-md-offset-1\"> <div class=\"form-group\"> <label for=\"script_name\">Name</label> <input type=\"text\" class=\"form-control\" id=\"script_name\" placeholder=\"Script name\"> </div> </div> </div> <div class=\"row text-center\"> <div class=\"form-inline\"> <div class=\"form-group\"> <label for=\"data_input\">Data</label> <input type=\"text\" class=\"form-control\" id=\"data_input\" placeholder=\"Data\"> </div> <div class=\"form-group\"> <label for=\"mode_input\" data-toggle=\"tooltip\" data-placement=\"bottom\" title=\"Tooltip on bottom\">Mode</label> <input type=\"text\" class=\"form-control\" id=\"mode_input\" placeholder=\"Mode\"> </div> <div class=\"form-group\"> <label for=\"data_value\">Data Value</label> <input type=\"text\" class=\"form-control\" id=\"data_value\" placeholder=\"Data Value\"> </div> <div class=\"form-group\"> <label for=\"days_input\">Days</label> <input type=\"text\" class=\"form-control\" id=\"days_input\" placeholder=\"Days\"> </div> <button type=\"submit\" class=\"btn btn-primary\" onclick=\"dosearch()\">Search</button> </div> </div> </div> </div> </nav>";
             return searchbar;
         }
 
@@ -374,67 +324,7 @@ namespace Script_Tracker
 
 
 
-        static string GetGraphUrl(Script script, int days, string data, string datavalue, ModeEnum mode)
-        {
-            data = data.ToLowerFast();
-            datavalue = datavalue?.ToLowerFast();
-            DateTime timestamp = DateTime.Now;
-            string fileID = GetFileIDForTimestamp(timestamp).ToString();
-            string graphvalues = "";
-            string labels = "";
-            int highest = 10;
-            for (int i = days-1; i >= 0; i--)
-            {
-                YAMLConfiguration file = getlog(GetFileIDForTimestamp(timestamp.AddDays(i * -1)).ToString());
-                labels += "," + timestamp.AddDays(i * -1).Day + "/" + timestamp.AddDays(i * -1).Month;
-                for (int y = 0; y < 24; y++)
-                {
-                    if (data == "servers")
-                    {
-                        int amount = file.GetKeys(y + "." + script.ID).Count;
-                        graphvalues += "," + amount;
-                        if (highest < amount)
-                        {
-                            highest = amount;
-                        }
-                    }
-                    else
-                    {
-                        switch (mode)
-                        {
-                            case ModeEnum.ADD:
-                                int count = 0;
-                                foreach (string server in file.GetKeys(y + "." + script.ID))
-                                {
-                                    count += file.ReadInt(y + "." + script.ID + "." + server + "." + data, 0);
-                                }
-                                if (highest < count)
-                                {
-                                    highest = count;
-                                }
-                                graphvalues += "," + count;
-                                break;
-                            case ModeEnum.COUNT:
-                                int count2 = 0;
-                                foreach (string server in file.GetKeys(y + "." + script.ID))
-                                {
-                                    if (file.ReadString(y + "." + script.ID + "." + server + "." + data, null).ToLowerFast() == datavalue)
-                                    {
-                                        count2++;
-                                    }
-                                }
-                                if (highest < count2)
-                                {
-                                    highest = count2;
-                                }
-                                graphvalues += "," + count2;
-                                break;
-                        }
-                    }
-                }
-            }
-            return "http://neo.mcmonkey.org/graph_api/graph_line.png?title=" + script.Name + "&show_points=false&width=1000&Height=500&xtitle=Days&ytitle=Amount&ynotches=" + Math.Ceiling(highest/10.0) + "&xnotches=1&xsteps=0.04166&xend=" + days + "&max=" + highest + "&values=" + graphvalues.Substring(1) + "&xstart=0&match_xsteps=true&xlabels=" + labels.Substring(1);
-        }
+
 
     }
 }
