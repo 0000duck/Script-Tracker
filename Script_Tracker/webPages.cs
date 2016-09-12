@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Http;
 using YAMLHelper;
+using System.IO;
 
 namespace Script_Tracker
 {
@@ -18,7 +19,6 @@ namespace Script_Tracker
             {
                 return; //add 404 page
             }
-            string searchbar = Program.getsearchbar();
             string publicdata = Program.PublicDataAsString(script);
             int days;
             if (!int.TryParse(request.Request.QueryString["days"], out days))
@@ -41,8 +41,13 @@ namespace Script_Tracker
             {
                 mode = ModeEnum.ADD;
             }
+            string searchbar = ParseHTML("html/searchbar.html", null);
             string graphurl = GetGraphUrl(script, days, datasearch, datavalue, mode);
-            byte[] data = Encoding.UTF8.GetBytes("<!doctype html><html><head><title>Script Tracker</title></head><body>" + searchbar + "<br><p> Script: " + script.Name + "<br>Author: " + script.Author + "<br>Public data: " + publicdata + "<br><img src='" + graphurl + "'></body></html>");
+            Dictionary<string, string> parseArgs = new Dictionary<string, string>() {
+                {"searchbar", searchbar}, {"title", script.Name}, {"author", script.Author}, {"public_data", publicdata}, {"url1", graphurl}
+            };
+            string HTML = ParseHTML("html/script page.html", parseArgs);
+            byte[] data = Encoding.UTF8.GetBytes(HTML);
             request.Response.OutputStream.Write(data, 0, data.Length);
         }
 
@@ -51,8 +56,7 @@ namespace Script_Tracker
 
         public static void getPopularPage(HttpListenerContext request)
         {
-            byte[] data = Encoding.UTF8.GetBytes("<!doctype html><html><head><title>Script Tracker</title><link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" integrity=\"sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7\" crossorigin=\"anonymous\"></head><body><div class=\"container\" style=\"margin-top: 30px\"><div class=\"row\"><div class=\"col-md-8 col-md-offset-2\"><table class=\"table table-bordered table-condensed data-table table-striped\" id=\"script-list\"><thead><tr><th class=\"text-center\">Rank</th><th class=\"text-center\">Script</th><th class=\"text-center\">Servers</th></tr></thead><tbody>");
-            request.Response.OutputStream.Write(data, 0, data.Length);
+            StringBuilder tablecontents = new StringBuilder();
             List<KeyValuePair<Script, int>> popular = Program.getpopular(999);
             int i = 0;
             foreach (KeyValuePair<Script, int> current in popular)
@@ -60,14 +64,48 @@ namespace Script_Tracker
                 i++;
                 Script script = current.Key;
                 int servers = current.Value;
-                byte[] data2 = Encoding.UTF8.GetBytes("<tr id=\"script-list-item\"> <td style=\"text-align: center;\"><b>" + i + "</b> </td> <td style=\"text-align: center;\"> <a href=\"/scripts?script=" + script.ID + "\" target=\"_blank\"><b>" + script.Name + "</b></a> </td> <td style=\"text-align: center;\"> <b>" + servers + "</b> </td> </tr>");
-                request.Response.OutputStream.Write(data2, 0, data2.Length);
+                Dictionary<string, string> parseArgs = new Dictionary<string, string>() {
+                    {"rank", i.ToString()}, {"title", script.Name}, {"servers", servers.ToString()}, {"ID", script.ID.ToString()}
+                };
+                string table = ParseHTML("html/popular table row.html", parseArgs);
+                tablecontents.Append(table);
             }
-            byte[] data3 = Encoding.UTF8.GetBytes("</tbody></table></div></div></div></body></html>");
-            request.Response.OutputStream.Write(data3, 0, data3.Length);
+            Dictionary<string, string> parseArgs2 = new Dictionary<string, string>() {
+                    {"table_contents", tablecontents.ToString()}
+                };
+            string HTML = ParseHTML("html/popular page.html", parseArgs2);
+            byte[] data = Encoding.UTF8.GetBytes(HTML);
+            request.Response.OutputStream.Write(data, 0, data.Length);
         }
 
 
+
+        public static string ParseHTML(string htmlpath, Dictionary<string, string> args)
+        {
+            string HTML = File.ReadAllText(htmlpath);
+
+            if (string.IsNullOrWhiteSpace(HTML))
+            {
+                return null;
+            }
+
+            if (args == null)
+            {
+                return HTML;
+            }
+
+            string variable;
+            string outcome;
+            foreach (KeyValuePair<string, string> variableArgs in args)
+            {
+                variable = "<{" + variableArgs.Key + "}>";
+                outcome = variableArgs.Value;
+
+                HTML = HTML.Replace(variable, outcome);
+            }
+
+            return HTML;
+        }
 
 
 
