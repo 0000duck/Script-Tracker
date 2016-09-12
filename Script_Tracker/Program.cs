@@ -307,13 +307,6 @@ namespace Script_Tracker
         }
 
 
-        public static string getsearchbar()
-        {
-            string searchbar = "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" integrity=\"sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7\" crossorigin=\"anonymous\"> <script> function dosearch() { script = document.getElementById(\"script_name\").value; data = document.getElementById(\"data_input\").value; datavalue = document.getElementById(\"data_value\").value; if (script == \"\") { alert(\"No script specified!\"); return; } query = \"?script=\" + script; if (data != \"\") { query = query + \"&data=\" + data; } if (datavalue != \"\") { query = query + \"&datavalue=\" + datavalue; } window.location.replace(\"http://morphanone.space:10123/scripts/script\" + query); } </script> <nav class=\"navbar navbar-default navbar-fixed-top\"> <div class=\"container\" style=\"padding-bottom: 7px\"> <div id=\"navbar\" class=\"navbar-collapse collapse\"> <div class=\"row\"> <div class=\"col-md-10 col-md-offset-1\"> <div class=\"form-group\"> <label for=\"script_name\">Name</label> <input type=\"text\" class=\"form-control\" id=\"script_name\" placeholder=\"Script name\"> </div> </div> </div> <div class=\"row text-center\"> <div class=\"form-inline\"> <div class=\"form-group\"> <label for=\"data_input\">Data</label> <input type=\"text\" class=\"form-control\" id=\"data_input\" placeholder=\"Data\"> </div> <div class=\"form-group\"> <label for=\"mode_input\" data-toggle=\"tooltip\" data-placement=\"bottom\" title=\"Tooltip on bottom\">Mode</label> <input type=\"text\" class=\"form-control\" id=\"mode_input\" placeholder=\"Mode\"> </div> <div class=\"form-group\"> <label for=\"data_value\">Data Value</label> <input type=\"text\" class=\"form-control\" id=\"data_value\" placeholder=\"Data Value\"> </div> <div class=\"form-group\"> <label for=\"days_input\">Days</label> <input type=\"text\" class=\"form-control\" id=\"days_input\" placeholder=\"Days\"> </div> <button type=\"submit\" class=\"btn btn-primary\" onclick=\"dosearch()\">Search</button> </div> </div> </div> </div> </nav>";
-            return searchbar;
-        }
-
-
 
         public static long GetFileIDForTimestamp(DateTime timestamp)
         {
