@@ -182,7 +182,7 @@ namespace Script_Tracker
             YAMLConfiguration log = getlog(fileID);
             foreach (string queryKey in request.Request.QueryString.Keys)
             {
-                log.Set(timestamp.Hour + "." + script.ID + "." + address + "." + queryKey, request.Request.QueryString[queryKey]);
+                log.Set(timestamp.Hour + "." + script.ID + "." + address + timestamp.Millisecond + "." + queryKey, request.Request.QueryString[queryKey]);
             }
             Directory.CreateDirectory("logs/");
             File.WriteAllText("logs/" + fileID + ".yml", log.SaveToString());
