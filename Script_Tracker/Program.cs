@@ -179,6 +179,9 @@ namespace Script_Tracker
                 Console.WriteLine("REFUSED data for script: " + script.ID + ", reason: spam prevention.");
                 return;
             }
+            else if (DateTime.Now.Subtract(script.FloodControl[address].Value).TotalMinutes > 10) {
+                script.FloodControl[address] = new KeyValuePair<int, DateTime>(0, DateTime.Now);
+            }
             script.FloodControl[address] = new KeyValuePair<int, DateTime>(script.FloodControl[address].Key + 1, DateTime.Now);
             DateTime timestamp = DateTime.Now.AddMinutes(30);
             string fileID = GetFileIDForTimestamp(timestamp).ToString();
