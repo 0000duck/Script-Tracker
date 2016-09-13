@@ -168,19 +168,18 @@ namespace Script_Tracker
                 Console.WriteLine("REFUSED data for script: unknown, reason: inexisting script ID.");
                 return;
             }
-            string floodKey = script.ID + "+" + address;
-            if (!script.FloodControl.ContainsKey(floodKey))
+            if (!script.FloodControl.ContainsKey(address))
             {
-                script.FloodControl[floodKey] = new KeyValuePair<int, DateTime>(0, DateTime.Now);
+                script.FloodControl[address] = new KeyValuePair<int, DateTime>(0, DateTime.Now);
             }
-            else if ((script.FloodControl[floodKey].Key > 5) && (DateTime.Now.Subtract(script.FloodControl[floodKey].Value).TotalMinutes < 10))
+            else if ((script.FloodControl[address].Key > 5) && (DateTime.Now.Subtract(script.FloodControl[address].Value).TotalMinutes < 10))
             {
                 byte[] data = Encoding.UTF8.GetBytes("FAILURE! don't force feed me!");
                 request.Response.OutputStream.Write(data, 0, data.Length);
                 Console.WriteLine("REFUSED data for script: " + script.ID + ", reason: spam prevention.");
                 return;
             }
-            script.FloodControl[floodKey] = new KeyValuePair<int, DateTime>(script.FloodControl[floodKey].Key + 1, DateTime.Now);
+            script.FloodControl[address] = new KeyValuePair<int, DateTime>(script.FloodControl[address].Key + 1, DateTime.Now);
             DateTime timestamp = DateTime.Now.AddMinutes(30);
             string fileID = GetFileIDForTimestamp(timestamp).ToString();
             YAMLConfiguration log = getlog(fileID);
