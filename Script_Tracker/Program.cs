@@ -172,7 +172,7 @@ namespace Script_Tracker
             {
                 script.FloodControl[address] = new KeyValuePair<int, DateTime>(0, DateTime.Now);
             }
-            else if ((script.FloodControl[address].Key > 10) && (DateTime.Now.Subtract(script.FloodControl[address].Value).TotalMinutes < 5))
+            else if ((script.FloodControl[address].Key > 5) && (DateTime.Now.Subtract(script.FloodControl[address].Value).TotalMinutes < 10))
             {
                 byte[] data = Encoding.UTF8.GetBytes("FAILURE! don't force feed me!");
                 request.Response.OutputStream.Write(data, 0, data.Length);
