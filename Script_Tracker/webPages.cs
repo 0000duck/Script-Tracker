@@ -44,7 +44,7 @@ namespace Script_Tracker
             string searchbar = ParseHTML("html/searchbar.html", null);
             string graphurl = GetGraphUrl(script, days, datasearch, datavalue, mode);
             Dictionary<string, string> parseArgs = new Dictionary<string, string>() {
-                {"searchbar", searchbar}, {"title", script.Name}, {"author", script.Author}, {"public_data", publicdata}, {"url1", graphurl}
+                {"searchbar", searchbar}, {"title", script.Name}, {"author", script.Author}, {"public_data", publicdata}, {"url1", graphurl}, {"ID", script.ID.ToString()}
             };
             string HTML = ParseHTML("html/script page.html", parseArgs);
             byte[] data = Encoding.UTF8.GetBytes(HTML);

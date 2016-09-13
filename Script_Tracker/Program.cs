@@ -300,9 +300,8 @@ namespace Script_Tracker
             DateTime timestamp = DateTime.Now.AddHours(-1);
             string fileID = GetFileIDForTimestamp(timestamp).ToString();
             YAMLConfiguration log = getlog(fileID);
-            foreach (string value in log.GetKeys(timestamp.Hour.ToString()))
+            foreach (Script script in ScriptTable)
             {
-                Script script = GetScript(int.Parse(value));
                 int servers = log.GetKeys(timestamp.Hour + "." + script.ID).Count;
                 popular.Add(new KeyValuePair<Script, int>(script, servers));
             }
