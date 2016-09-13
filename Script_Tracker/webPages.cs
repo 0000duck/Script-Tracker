@@ -118,19 +118,19 @@ namespace Script_Tracker
             datavalue = datavalue?.ToLowerFast();
             DateTime timestamp = DateTime.Now;
             string fileID = Program.GetFileIDForTimestamp(timestamp).ToString();
-            string graphvalues = "";
-            string labels = "";
+            StringBuilder graphvalues = new StringBuilder();
+            StringBuilder labels = new StringBuilder();
             int highest = 10;
             for (int i = days - 1; i >= 0; i--)
             {
                 YAMLConfiguration file = Program.getlog(Program.GetFileIDForTimestamp(timestamp.AddDays(i * -1)).ToString());
-                labels += "," + timestamp.AddDays(i * -1).Day + "/" + timestamp.AddDays(i * -1).Month;
+                labels.Append("," + timestamp.AddDays(i * -1).Day + "/" + timestamp.AddDays(i * -1).Month);
                 for (int y = 0; y < 24; y++)
                 {
                     if (data == "servers")
                     {
                         int amount = file.GetKeys(y + "." + script.ID).Count;
-                        graphvalues += "," + amount;
+                        graphvalues.Append("," + amount);
                         if (highest < amount)
                         {
                             highest = amount;
@@ -150,7 +150,7 @@ namespace Script_Tracker
                                 {
                                     highest = count;
                                 }
-                                graphvalues += "," + count;
+                                graphvalues.Append("," + count);
                                 break;
                             case ModeEnum.COUNT:
                                 int count2 = 0;
@@ -165,13 +165,13 @@ namespace Script_Tracker
                                 {
                                     highest = count2;
                                 }
-                                graphvalues += "," + count2;
+                                graphvalues.Append("," + count2);
                                 break;
                         }
                     }
                 }
             }
-            return "http://neo.mcmonkey.org/graph_api/graph_line.png?title=" + script.Name + "&show_points=false&width=1000&Height=500&xtitle=Days&ytitle=Amount&ynotches=" + Math.Ceiling(highest / 10.0) + "&xnotches=1&xsteps=0.04166&xend=" + days + "&max=" + highest + "&values=" + graphvalues.Substring(1) + "&xstart=0&match_xsteps=true&xlabels=" + labels.Substring(1);
+            return "http://neo.mcmonkey.org/graph_api/graph_line.png?title=" + script.Name + "&show_points=false&width=1000&Height=500&xtitle=Days&ytitle=Amount&ynotches=" + Math.Ceiling(highest / 10.0) + "&xnotches=1&xsteps=0.04166&xend=" + days + "&max=" + highest + "&values=" + graphvalues.ToString().Substring(1) + "&xstart=0&match_xsteps=true&xlabels=" + labels.ToString().Substring(1);
         }
 
     }
