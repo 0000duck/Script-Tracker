@@ -17,7 +17,7 @@ namespace Script_Tracker
             Console.WriteLine("Starting server.");
 
             LoadDatabase();
-
+            List<KeyValuePair<Script, int>> scripts = getpopular(999);
             Task.Factory.StartNew(() =>
             {
                 while (true)
@@ -293,6 +293,7 @@ namespace Script_Tracker
         }
 
 
+        public static List<KeyValuePair<Script, int>> sortedscripts = new List<KeyValuePair<Script, int>>();
 
         public static List<KeyValuePair<Script, int>> getpopular(int amount)
         {
@@ -306,6 +307,7 @@ namespace Script_Tracker
                 popular.Add(new KeyValuePair<Script, int>(script, servers));
             }
             popular.Sort((one, two) => two.Value.CompareTo(one.Value));
+            sortedscripts = popular;
             return popular.GetRange(0, amount > popular.Count ? popular.Count : amount);
         }
 

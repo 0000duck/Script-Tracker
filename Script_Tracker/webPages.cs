@@ -52,8 +52,7 @@ namespace Script_Tracker
         }
 
 
-
-
+        
         public static void getPopularPage(HttpListenerContext request)
         {
             StringBuilder tablecontents = new StringBuilder();
