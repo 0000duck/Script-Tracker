@@ -184,7 +184,7 @@ namespace Script_Tracker
             }
             script.FloodControl[address] = new KeyValuePair<int, DateTime>(script.FloodControl[address].Key + 1, DateTime.Now);
             DateTime timestamp = DateTime.Now.AddMinutes(30);
-            string fileID = GetFileIDForTimestamp(timestamp).ToString();
+            string fileID = GetFileIDForTimestamp(timestamp);
             YAMLConfiguration log = getlog(fileID);
             Console.WriteLine("Recieved data for script: " + script.ID);
             foreach (string queryKey in request.Request.QueryString.Keys)
@@ -302,7 +302,7 @@ namespace Script_Tracker
         {
             List<KeyValuePair<Script, int>> popular  = new List<KeyValuePair<Script, int>>();
             DateTime timestamp = DateTime.Now.AddHours(-1);
-            string fileID = GetFileIDForTimestamp(timestamp).ToString();
+            string fileID = GetFileIDForTimestamp(timestamp);
             YAMLConfiguration log = getlog(fileID);
             foreach (Script script in ScriptTable)
             {
@@ -316,10 +316,10 @@ namespace Script_Tracker
 
 
 
-        public static long GetFileIDForTimestamp(DateTime timestamp)
+        public static string GetFileIDForTimestamp(DateTime timestamp)
         {
             timestamp = timestamp.ToUniversalTime();
-            return ((timestamp.Ticks / TimeSpan.TicksPerMillisecond / 1000 / 60 / 60 / 24) * 24 * 60 * 60 * 1000);
+            return timestamp.Year + "-" + timestamp.Month + "-" + timestamp.Day;
         }
 
 

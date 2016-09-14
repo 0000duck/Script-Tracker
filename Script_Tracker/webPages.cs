@@ -116,13 +116,13 @@ namespace Script_Tracker
             data = data.ToLowerFast();
             datavalue = datavalue?.ToLowerFast();
             DateTime timestamp = DateTime.Now;
-            string fileID = Program.GetFileIDForTimestamp(timestamp).ToString();
+            string fileID = Program.GetFileIDForTimestamp(timestamp);
             StringBuilder graphvalues = new StringBuilder();
             StringBuilder labels = new StringBuilder();
             int highest = 10;
             for (int i = days - 1; i >= 0; i--)
             {
-                YAMLConfiguration file = Program.getlog(Program.GetFileIDForTimestamp(timestamp.AddDays(i * -1)).ToString());
+                YAMLConfiguration file = Program.getlog(Program.GetFileIDForTimestamp(timestamp.AddDays(i * -1)));
                 labels.Append("," + timestamp.AddDays(i * -1).Day + "/" + timestamp.AddDays(i * -1).Month);
                 for (int y = 0; y < 24; y++)
                 {
