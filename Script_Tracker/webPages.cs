@@ -115,7 +115,7 @@ namespace Script_Tracker
         {
             data = data.ToLowerFast();
             datavalue = datavalue?.ToLowerFast();
-            DateTime timestamp = DateTime.Now;
+            DateTime timestamp = DateTime.Now.ToUniversalTime();
             string fileID = Program.GetFileIDForTimestamp(timestamp);
             StringBuilder graphvalues = new StringBuilder();
             StringBuilder labels = new StringBuilder();
