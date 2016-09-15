@@ -118,11 +118,11 @@ namespace Script_Tracker
                     }
                     string author = result.After(" by ").Before(" ");
                     List<string> publicdata = new List<string>();
-                    if (result.Contains("&lt;--script-tracker--&gt;") && result.Contains("&lt;--!script-tracker--&gt;"))
+                    if (result.ToLowerFast().Contains("&lt;--script-tracker--&gt;") && result.ToLowerFast().Contains("&lt;--!script-tracker--&gt;"))
                     {
-                        string arguments = result.After("&lt;--script-tracker--&gt;").Before("&lt;--!script-tracker--&gt;");
+                        string arguments = result.ToLowerFast().After("&lt;--script-tracker--&gt;").Before("&lt;--!script-tracker--&gt;");
                         Dictionary<string, string> arglist = new Dictionary<string, string>();
-                        foreach (string argumentvalue in arguments.Split(new string[] { "<br>" }, StringSplitOptions.RemoveEmptyEntries)) {
+                        foreach (string argumentvalue in arguments.ToLowerFast().Split(new string[] { "<br>" }, StringSplitOptions.RemoveEmptyEntries)) {
                             string[] split = argumentvalue.SplitFast('=', 2);
                             arglist.Add(split[0], split[1]);
                         }
@@ -189,7 +189,7 @@ namespace Script_Tracker
             Console.WriteLine("Recieved data for script: " + script.ID);
             foreach (string queryKey in request.Request.QueryString.Keys)
             {
-                log.Set(timestamp.Hour + "." + script.ID + "." + address + "-" + timestamp.Ticks.ToString() + "." + queryKey, request.Request.QueryString[queryKey]);
+                log.Set(timestamp.Hour + "." + script.ID + "." + address + "-" + timestamp.Ticks.ToString() + "." + queryKey.ToLowerFast().Replace('.', '_'), request.Request.QueryString[queryKey]).ToLowerFast();
             }
             Directory.CreateDirectory("logs/");
             File.WriteAllText("logs/" + fileID + ".yml", log.SaveToString());

@@ -174,7 +174,7 @@ namespace Script_Tracker
                                                 Sendchat(S_DARKBLUE + "No info found on this script.", channel);
                                                 break;
                                             }
-                                            DateTime timestamp = DateTime.Now.AddHours(-1);
+                                            DateTime timestamp = DateTime.Now.ToUniversalTime().AddHours(-1);
                                             string fileID = Program.GetFileIDForTimestamp(timestamp);
                                             int servers = Program.getlog(fileID).GetKeys(timestamp.Hour + "." + script.ID).Count;
                                             KeyValuePair<Script, int> indexsearch = new KeyValuePair<Script, int>(script, servers);
