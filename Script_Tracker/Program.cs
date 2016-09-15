@@ -189,7 +189,7 @@ namespace Script_Tracker
             Console.WriteLine("Recieved data for script: " + script.ID);
             foreach (string queryKey in request.Request.QueryString.Keys)
             {
-                log.Set(timestamp.Hour + "." + script.ID + "." + address + "-" + timestamp.Ticks.ToString() + "." + queryKey.ToLowerFast().Replace('.', '_'), request.Request.QueryString[queryKey]).ToLowerFast();
+                log.Set(timestamp.Hour + "." + script.ID + "." + address + "-" + timestamp.Ticks.ToString() + "." + queryKey.ToLowerFast().Replace('.', '_'), request.Request.QueryString[queryKey].ToLowerFast());
             }
             Directory.CreateDirectory("logs/");
             File.WriteAllText("logs/" + fileID + ".yml", log.SaveToString());
