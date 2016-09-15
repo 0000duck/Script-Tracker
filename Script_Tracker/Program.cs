@@ -122,7 +122,7 @@ namespace Script_Tracker
                     {
                         string arguments = result.ToLowerFast().After("&lt;--script-tracker--&gt;").Before("&lt;--!script-tracker--&gt;");
                         Dictionary<string, string> arglist = new Dictionary<string, string>();
-                        foreach (string argumentvalue in arguments.ToLowerFast().Split(new string[] { "<br>" }, StringSplitOptions.RemoveEmptyEntries)) {
+                        foreach (string argumentvalue in arguments.Split(new string[] { "<br>" }, StringSplitOptions.RemoveEmptyEntries)) {
                             string[] split = argumentvalue.SplitFast('=', 2);
                             arglist.Add(split[0], split[1]);
                         }
