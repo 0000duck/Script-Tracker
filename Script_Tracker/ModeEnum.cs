@@ -9,6 +9,7 @@ namespace Script_Tracker
     enum ModeEnum
     {
         ADD,
-        COUNT
+        COUNT,
+        AVERAGE
     }
 }

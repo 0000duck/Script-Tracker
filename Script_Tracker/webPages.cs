@@ -12,6 +12,14 @@ namespace Script_Tracker
 {
     class webPages
     {
+        public static void getHowToPage(HttpListenerContext request)
+        {
+            string HTML = ParseHTML("html/howto page.html", null);
+            byte[] data = Encoding.UTF8.GetBytes(HTML);
+            request.Response.OutputStream.Write(data, 0, data.Length);
+        }
+
+
         public static void getScriptPage(HttpListenerContext request)
         {
             Script script = Program.GetScript(request.Request.QueryString["script"]);
@@ -37,7 +45,7 @@ namespace Script_Tracker
             }
             string modeinput = request.Request.QueryString["mode"];
             ModeEnum mode;
-            if (!Enum.TryParse(modeinput ?? "", out mode))
+            if (!Enum.TryParse(modeinput ?? "", true, out mode))
             {
                 mode = ModeEnum.ADD;
             }
@@ -165,6 +173,25 @@ namespace Script_Tracker
                                     highest = count2;
                                 }
                                 graphvalues.Append("," + count2);
+                                break;
+                            case ModeEnum.AVERAGE:
+                                int count3 = 0;
+                                List<string> keys = file.GetKeys(y + "." + script.ID);
+                                foreach (string server in keys)
+                                {
+                                    count3 += file.ReadInt(y + "." + script.ID + "." + server + "." + data, 0);
+                                }
+                                int keycount = keys.Count;
+                                if (keycount < 1)
+                                {
+                                    keycount = 1;
+                                }
+                                count3 /= keycount;
+                                if (highest < count3)
+                                {
+                                    highest = count3;
+                                }
+                                graphvalues.Append("," + count3);
                                 break;
                         }
                     }

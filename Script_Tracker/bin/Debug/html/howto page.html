@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+	  <title>
+	  Script Tracker - How To
+	  </title>
+  </head>
+  <body>
+    How to start tracking your script on Script-tracker:<br>
+        <ol>
+	<li>Firstly you will need to upload your script to the script repo at http://mcmonkey.org/denizen/repo/list.</li><br>
+	<li>Add the following bit of script to your file in a world script, filling in the variables.<br><br>
+		on system time hourly:<br>
+		- webget "http://stats.denizenscript.com/tracker?script=&lt;ID HERE&gt;&version=&lt;VERSION HERE&gt;&otherdata=&lt;MORE&gt;"<br><br>
+   
+	You are free to track any kind of custom data you want, all you have to do is pass it in the argument list. This data will be retrievable through the web interface.</li><br>
+
+	<li>Once your script is fully updated, and users allow it to send data from their server, your script will start gathering data on Script-Tracker.</li><br>
+
+	<li>additional options<br><br>
+
+          <ul>
+	  <li>To tell script tracker which of your data keys can be publicly listed, you need to add the following bit of text to your description on your repo page:<br>
+	&lt;--script-tracker--&gt;<br>
+	public_data=&lt;data name 1 here&gt;,&lt;data name 2 here&gt;,&lt;etc etc&gt;<br>
+	&lt;--!script-tracker--&gt;</li><br>
+
+	  <li>to check whether or not your webget was successful, make it a waited command ( - ~webget ) and use the save: argument.
+		you can then use the &lt;entry[&lt;name&gt;].result&gt; tag to see script tracker's response.</li></ul></li></ol>
+  </body>
+</html>

@@ -125,7 +125,7 @@ namespace Script_Tracker
                                 {
                                     case "how":
                                     case "howto":
-                                        Sendchat(S_DARKBLUE + "To start listing your own script, simply follow the explanation on http://one.denizenscript.com/haste/35720", channel);
+                                        Sendchat(S_DARKBLUE + "To start listing your own script, simply follow the explanation on http://stats.denizenscript.com/howto", channel);
                                         break;
                                     case "halp":
                                     case "help":

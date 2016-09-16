@@ -75,6 +75,9 @@ namespace Script_Tracker
                         case "/popular":
                             webPages.getPopularPage(context);
                             break;
+                        case "/howto":
+                            webPages.getHowToPage(context);
+                            break;
                      }
                 }
                 catch(Exception ex)
