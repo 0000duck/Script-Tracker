@@ -184,6 +184,34 @@ namespace Script_Tracker
                                                 " - Link: http://one.denizenscript.com/denizen/repo/entry/" + script.ID, channel);
                                             break;
                                         }
+                                    case "r":
+                                    case "rank":
+                                        {
+                                            string search = privmsg.After(" ").Trim();
+                                            int result;
+                                            if (int.TryParse(search, out result))
+                                            {
+                                                if (Program.sortedscripts.Count < result || result < 1)
+                                                {
+                                                    Sendchat(S_DARKBLUE + "There aren't this many scripts!", channel);
+                                                }
+                                                else
+                                                {
+                                                    Script script = Program.sortedscripts[result - 1].Key;
+                                                    DateTime timestamp = DateTime.Now.ToUniversalTime().AddHours(-1);
+                                                    string fileID = Program.GetFileIDForTimestamp(timestamp);
+                                                    int servers = Program.getlog(fileID).GetKeys(timestamp.Hour + "." + script.ID).Count;
+                                                    Sendchat(S_DARKBLUE + "Script: " + S_CYAN + script.Name + S_DARKBLUE + " - Author: " + S_CYAN + script.Author + S_DARKBLUE + " - Rank: " + S_CYAN + result +
+                                                        S_DARKBLUE + " - Servers: " + S_CYAN + servers + S_DARKBLUE +
+                                                        " - Link: http://one.denizenscript.com/denizen/repo/entry/" + script.ID, channel);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                Sendchat(S_DARKBLUE + "This is not a valid rank!", channel);
+                                            }
+                                            break;
+                                        }
                                     case "author":
                                     case "auth":
                                     case "au":
