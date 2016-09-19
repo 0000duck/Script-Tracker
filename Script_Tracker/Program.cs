@@ -17,7 +17,6 @@ namespace Script_Tracker
             Console.WriteLine("Starting server.");
 
             LoadDatabase();
-            List<KeyValuePair<Script, int>> scripts = getpopular(999);
             Task.Factory.StartNew(() =>
             {
                 while (true)
@@ -150,6 +149,7 @@ namespace Script_Tracker
             }
             KeyValuePair<int, int> output = new KeyValuePair<int, int>(i, authors.Count);
             ScriptTable = templist;
+            List<KeyValuePair<Script, int>> cachesortedscripts = getpopular(999);
             return output;
         }
         public static void HandleTrackerInput(HttpListenerContext request)

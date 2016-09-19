@@ -197,7 +197,7 @@ namespace Script_Tracker
                                                 }
                                                 else
                                                 {
-                                                    Script script = Program.sortedscripts[result - 1].Key;
+                                                    Script script = Program.getpopular(999)[result - 1].Key;
                                                     DateTime timestamp = DateTime.Now.ToUniversalTime().AddHours(-1);
                                                     string fileID = Program.GetFileIDForTimestamp(timestamp);
                                                     int servers = Program.getlog(fileID).GetKeys(timestamp.Hour + "." + script.ID).Count;

@@ -148,14 +148,14 @@ namespace Script_Tracker
                         switch (mode)
                         {
                             case ModeEnum.ADD:
-                                int count = 0;
+                                double count = 0;
                                 foreach (string server in file.GetKeys(y + "." + script.ID))
                                 {
-                                    count += file.ReadInt(y + "." + script.ID + "." + server + "." + data, 0);
+                                    count += file.ReadDouble(y + "." + script.ID + "." + server + "." + data, 0);
                                 }
                                 if (highest < count)
                                 {
-                                    highest = count;
+                                    highest = Convert.ToInt32(Math.Ceiling(count));
                                 }
                                 graphvalues.Append("," + count);
                                 break;
@@ -175,11 +175,11 @@ namespace Script_Tracker
                                 graphvalues.Append("," + count2);
                                 break;
                             case ModeEnum.AVERAGE:
-                                int count3 = 0;
+                                double count3 = 0;
                                 List<string> keys = file.GetKeys(y + "." + script.ID);
                                 foreach (string server in keys)
                                 {
-                                    count3 += file.ReadInt(y + "." + script.ID + "." + server + "." + data, 0);
+                                    count3 += file.ReadDouble(y + "." + script.ID + "." + server + "." + data, 0);
                                 }
                                 int keycount = keys.Count;
                                 if (keycount < 1)
@@ -189,7 +189,7 @@ namespace Script_Tracker
                                 count3 /= keycount;
                                 if (highest < count3)
                                 {
-                                    highest = count3;
+                                    highest = Convert.ToInt32(Math.Ceiling(count3));
                                 }
                                 graphvalues.Append("," + count3);
                                 break;
