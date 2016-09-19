@@ -1,34 +1,70 @@
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-<style>
-	body {
-		min-height: 2000px;
-		padding-top: 70px;
-	}
-</style>
-<script>
-	function dosearch() {
-		script = document.getElementById("scriptsearch").value;
-		if (script == "") {
-			alert("No script specified!");
-			return;
-		}
-		query = "?script=" + script;
-		window.location.replace("/scripts" + query);
-	}
-</script>
-<nav class="navbar navbar-default navbar-fixed-top">
-	<div class="container">
-		<div id="navbar" class="navbar-collapse collapse">
-			<div class="row">
-				<div class="col-md-2"></div>
-				<div class="col-md-6">
-					<input class="form-control" type="text" id="scriptsearch" placeholder="Enter Script">
-				</div>
-				<div class="col-md-2">
-					<input class="btn btn-primary" id="dosearch" type="button" value="Search" onclick="dosearch()">
-				</div>
-				<div class="col-md-2"></div>
-			</div>
-		</div>
-	</div>
-</nav>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+        <script>
+            var script = document.getElementById("script_name");
+            var data = document.getElementById("data_input");
+            var datavalue = document.getElementById("data_value");
+
+            function dosearch() {
+                if (script.value == "") {
+                    alert("No script specified!");
+                    return;
+                }
+                var query = "?script=" + script.value;
+                if (data.value != "") {
+                    query += "&data=" + data.value;
+                }
+                if (datavalue.value != "") {
+                    query += "&datavalue=" + datavalue.value;
+                }
+                window.location.replace("/scripts" + query);
+            }
+
+            $(document).ready(function() {
+                script.value = $.urlParam("script");
+                data.value = $.urlParam("data");
+                datavalue.value = $.urlParam("datavalue");
+            });
+
+            $.urlParam = function(name) {
+                var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
+                if (!results) { 
+                    return "";
+                }
+                return results[1] || "";
+            }
+        </script>
+
+        <nav class="navbar navbar-default">
+            <div class="container" style="padding-bottom: 7px">
+                <div id="navbar" class="navbar-collapse collapse">
+                    <div class="row">
+                        <div class="col-md-10 col-md-offset-1">
+                            <div class="form-group">
+                                <input type="text" class="form-control" id="script_name" placeholder="Script name">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="form-inline">
+                            <div class="form-group">
+                                <label for="data_input">Data</label>
+                                <input type="text" class="form-control" id="data_input" placeholder="Data">
+                            </div>
+                            <div class="form-group">
+                                <label for="mode_input" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom">Mode</label>
+                                <input type="text" class="form-control" id="mode_input" placeholder="Mode">
+                            </div>
+                            <div class="form-group">
+                                <label for="data_value">Data Value</label>
+                                <input type="text" class="form-control" id="data_value" placeholder="Data Value">
+                            </div>
+                            <div class="form-group">
+                                <label for="days_input">Days</label>
+                                <input type="text" class="form-control" id="days_input" placeholder="Days">
+                            </div>
+                            <button type="submit" class="btn btn-primary" onclick="dosearch()">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
