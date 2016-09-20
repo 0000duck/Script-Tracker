@@ -62,6 +62,7 @@ namespace Script_Tracker
                 {
                     context = listener.GetContext();
                     context.Response.StatusCode = 200;
+                    context.Response.ContentType = "text/html";
                     string page = context.Request.Url.LocalPath.Before("?");
                     switch (page)
                     {
@@ -77,7 +78,11 @@ namespace Script_Tracker
                         case "/howto":
                             webPages.getHowToPage(context);
                             break;
-                     }
+                        case "/graph":
+                            context.Response.ContentType = "image/png";
+                            webPages.getGraphImage(context);
+                            break;
+                    }
                 }
                 catch(Exception ex)
                 {

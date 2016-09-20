@@ -117,27 +117,61 @@ namespace Script_Tracker
 
 
 
-
+        public static void getGraphImage(HttpListenerContext request)
+        {
+            Script script = Program.GetScript(request.Request.QueryString["script"]);
+            if (script == null)
+            {
+                return; //add 404 page
+            }
+            int days;
+            if (!int.TryParse(request.Request.QueryString["days"], out days))
+            {
+                days = 10;
+            }
+            string data = request.Request.QueryString["data"];
+            if (string.IsNullOrWhiteSpace(data))
+            {
+                data = "servers";
+            }
+            string datavalue = request.Request.QueryString["datavalue"];
+            if (string.IsNullOrWhiteSpace(datavalue))
+            {
+                datavalue = null;
+            }
+            string modeinput = request.Request.QueryString["mode"];
+            ModeEnum mode;
+            if (!Enum.TryParse(modeinput ?? "", true, out mode))
+            {
+                mode = ModeEnum.ADD;
+            }
+            byte[] output = GetGraph(script, days, data, datavalue, mode);
+            request.Response.OutputStream.Write(output, 0, output.Length);
+        }
 
         public static string GetGraphUrl(Script script, int days, string data, string datavalue, ModeEnum mode)
+        {
+            return "https://stats.denizenscript.com/graph?script=" + script.ID + "&data=" + data + "&mode=" + mode.ToString() + "&datavalue=" + datavalue + "&days=" + days;
+        }
+        public static byte[] GetGraph(Script script, int days, string data, string datavalue, ModeEnum mode)
         {
             data = data.ToLowerFast();
             datavalue = datavalue?.ToLowerFast();
             DateTime timestamp = DateTime.Now.ToUniversalTime();
             string fileID = Program.GetFileIDForTimestamp(timestamp);
-            StringBuilder graphvalues = new StringBuilder();
-            StringBuilder labels = new StringBuilder();
+            List<double> graphvalues = new List<double>();
+            List<string> labels = new List<string>();
             int highest = 10;
             for (int i = days - 1; i >= 0; i--)
             {
                 YAMLConfiguration file = Program.getlog(Program.GetFileIDForTimestamp(timestamp.AddDays(i * -1)));
-                labels.Append("," + timestamp.AddDays(i * -1).Day + "/" + timestamp.AddDays(i * -1).Month);
+                labels.Add(timestamp.AddDays(i * -1).Day + "/" + timestamp.AddDays(i * -1).Month);
                 for (int y = 0; y < 24; y++)
                 {
                     if (data == "servers")
                     {
                         int amount = file.GetKeys(y + "." + script.ID).Count;
-                        graphvalues.Append("," + amount);
+                        graphvalues.Add(amount);
                         if (highest < amount)
                         {
                             highest = amount;
@@ -157,7 +191,7 @@ namespace Script_Tracker
                                 {
                                     highest = Convert.ToInt32(Math.Ceiling(count));
                                 }
-                                graphvalues.Append("," + count);
+                                graphvalues.Add(count);
                                 break;
                             case ModeEnum.COUNT:
                                 int count2 = 0;
@@ -172,7 +206,7 @@ namespace Script_Tracker
                                 {
                                     highest = count2;
                                 }
-                                graphvalues.Append("," + count2);
+                                graphvalues.Add(count2);
                                 break;
                             case ModeEnum.AVERAGE:
                                 double count3 = 0;
@@ -191,13 +225,14 @@ namespace Script_Tracker
                                 {
                                     highest = Convert.ToInt32(Math.Ceiling(count3));
                                 }
-                                graphvalues.Append("," + count3);
+                                graphvalues.Add(count3);
                                 break;
                         }
                     }
                 }
             }
-            return "http://neo.mcmonkey.org/graph_api/graph_line.png?title=" + script.Name + "&show_points=false&width=1000&Height=500&xtitle=Days&ytitle=Amount&ynotches=" + Math.Ceiling(highest / 10.0) + "&xnotches=1&xsteps=0.04166&xend=" + days + "&max=" + highest + "&values=" + graphvalues.ToString().Substring(1) + "&xstart=0&match_xsteps=true&xlabels=" + labels.ToString().Substring(1);
+            return GraphRenderer.BasicLineGraph(script.Name, graphvalues, highest, Math.Ceiling(highest / 10.0), days, 24, labels);
+           // return "http://neo.mcmonkey.org/graph_api/graph_line.png?title=" + script.Name + "&show_points=false&width=1000&Height=500&xtitle=Days&ytitle=Amount&ynotches=" + Math.Ceiling(highest / 10.0) + "&xnotches=1&xsteps=0.04166&xend=" + days + "&max=" + highest + "&values=" + graphvalues.ToString().Substring(1) + "&xstart=0&match_xsteps=true&xlabels=" + labels.ToString().Substring(1);
         }
 
     }
