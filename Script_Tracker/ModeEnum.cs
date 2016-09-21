@@ -10,6 +10,7 @@ namespace Script_Tracker
     {
         ADD,
         COUNT,
-        AVERAGE
+        AVERAGE,
+        MULTICOUNT
     }
 }

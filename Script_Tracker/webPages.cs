@@ -158,82 +158,150 @@ namespace Script_Tracker
             data = data.ToLowerFast();
             datavalue = datavalue?.ToLowerFast();
             DateTime timestamp = DateTime.Now.ToUniversalTime();
-            string fileID = Program.GetFileIDForTimestamp(timestamp);
-            List<double> graphvalues = new List<double>();
-            List<string> labels = new List<string>();
-            int highest = 10;
-            for (int i = days - 1; i >= 0; i--)
+            switch (mode)
             {
-                YAMLConfiguration file = Program.getlog(Program.GetFileIDForTimestamp(timestamp.AddDays(i * -1)));
-                labels.Add(timestamp.AddDays(i * -1).Day + "/" + timestamp.AddDays(i * -1).Month);
-                for (int y = 0; y < 24; y++)
+
+                case ModeEnum.ADD:
+                case ModeEnum.COUNT:
+                case ModeEnum.AVERAGE:
+
                 {
-                    if (data == "servers")
+                    List<double> graphvalues = new List<double>();
+                    List<string> labels = new List<string>();
+                    int highest = 10;
+                    for (int i = days - 1; i >= 0; i--)
                     {
-                        int amount = file.GetKeys(y + "." + script.ID).Count;
-                        graphvalues.Add(amount);
-                        if (highest < amount)
+                        YAMLConfiguration file = Program.getlog(Program.GetFileIDForTimestamp(timestamp.AddDays(i * -1)));
+                        labels.Add(timestamp.AddDays(i * -1).Day + "/" + timestamp.AddDays(i * -1).Month);
+                        for (int y = 0; y < 24; y++)
                         {
-                            highest = amount;
+                            if (data == "servers")
+                            {
+                                int amount = file.GetKeys(y + "." + script.ID).Count;
+                                graphvalues.Add(amount);
+                                if (highest < amount)
+                                {
+                                    highest = amount;
+                                }
+                            }
+                            else
+                            {
+                                switch (mode)
+                                {
+                                    case ModeEnum.ADD:
+                                        double count = 0;
+                                        foreach (string server in file.GetKeys(y + "." + script.ID))
+                                        {
+                                            count += file.ReadDouble(y + "." + script.ID + "." + server + "." + data, 0);
+                                        }
+                                        if (highest < count)
+                                        {
+                                            highest = Convert.ToInt32(Math.Ceiling(count));
+                                        }
+                                        graphvalues.Add(count);
+                                        break;
+                                    case ModeEnum.COUNT:
+                                        int count2 = 0;
+                                        foreach (string server in file.GetKeys(y + "." + script.ID))
+                                        {
+                                            if (file.ReadString(y + "." + script.ID + "." + server + "." + data, "").ToLowerFast() == datavalue)
+                                            {
+                                                count2++;
+                                            }
+                                        }
+                                        if (highest < count2)
+                                        {
+                                            highest = count2;
+                                        }
+                                        graphvalues.Add(count2);
+                                        break;
+                                    case ModeEnum.AVERAGE:
+                                        double count3 = 0;
+                                        List<string> keys = file.GetKeys(y + "." + script.ID);
+                                        foreach (string server in keys)
+                                        {
+                                            count3 += file.ReadDouble(y + "." + script.ID + "." + server + "." + data, 0);
+                                        }
+                                        int keycount = keys.Count;
+                                        if (keycount < 1)
+                                        {
+                                            keycount = 1;
+                                        }
+                                        count3 /= keycount;
+                                        if (highest < count3)
+                                        {
+                                            highest = Convert.ToInt32(Math.Ceiling(count3));
+                                        }
+                                        graphvalues.Add(count3);
+                                        break;
+                                }
+                            }
                         }
                     }
-                    else
+                    return GraphRenderer.BasicLineGraph(script.Name, graphvalues, highest, Math.Ceiling(highest / 10.0), days, 24, labels);
+                }
+
+                case (ModeEnum.MULTICOUNT):
+                {
+                    Dictionary<string, List<int>> graphvalues = new Dictionary<string, List<int>>();
+                    List<string> labels = new List<string>();
+                    int highest = 10;
+                    int countsize = 0;
+                    for (int i = days - 1; i >= 0; i--)
                     {
-                        switch (mode)
+                        YAMLConfiguration file = Program.getlog(Program.GetFileIDForTimestamp(timestamp.AddDays(i * -1)));
+                        labels.Add(timestamp.AddDays(i * -1).Day + "/" + timestamp.AddDays(i * -1).Month);
+                        for (int y = 0; y < 24; y++)
                         {
-                            case ModeEnum.ADD:
-                                double count = 0;
-                                foreach (string server in file.GetKeys(y + "." + script.ID))
+                            Dictionary<string, int> loopvaluecount = new Dictionary<string, int>();
+                            foreach (string server in file.GetKeys(y + "." + script.ID))
+                            {
+                                string currentvalue = file.ReadString(y + "." + script.ID + "." + server + "." + data, "").ToLowerFast();
+                                int count;
+                                if (!string.IsNullOrWhiteSpace(currentvalue))
                                 {
-                                    count += file.ReadDouble(y + "." + script.ID + "." + server + "." + data, 0);
+                                    count = 1;
                                 }
-                                if (highest < count)
+                                else
                                 {
-                                    highest = Convert.ToInt32(Math.Ceiling(count));
+                                    count = 0;
                                 }
-                                graphvalues.Add(count);
-                                break;
-                            case ModeEnum.COUNT:
-                                int count2 = 0;
-                                foreach (string server in file.GetKeys(y + "." + script.ID))
+                                if (!loopvaluecount.ContainsKey(currentvalue))
                                 {
-                                    if (file.ReadString(y + "." + script.ID + "." + server + "." + data, null).ToLowerFast() == datavalue)
+                                     loopvaluecount.Add(currentvalue, 0);
+                                }
+                                loopvaluecount[currentvalue] = loopvaluecount[currentvalue] + count;
+                                if (!graphvalues.ContainsKey(currentvalue) && graphvalues.Keys.Count < 15 && !string.IsNullOrWhiteSpace(currentvalue))
+                                {
+                                    graphvalues.Add(currentvalue, new List<int>());
+                                    for (int z = 0; z < countsize; z++)
                                     {
-                                        count2++;
+                                        graphvalues[currentvalue].Add(0);
                                     }
                                 }
-                                if (highest < count2)
+                            }
+                            foreach (KeyValuePair<string, List<int>> currentvalue in graphvalues)
+                            {
+                                if (loopvaluecount.ContainsKey(currentvalue.Key))
                                 {
-                                    highest = count2;
+                                    graphvalues[currentvalue.Key].Add(loopvaluecount[currentvalue.Key]);
+                                    if (loopvaluecount[currentvalue.Key] > highest)
+                                        {
+                                            highest = loopvaluecount[currentvalue.Key];
+                                        }
                                 }
-                                graphvalues.Add(count2);
-                                break;
-                            case ModeEnum.AVERAGE:
-                                double count3 = 0;
-                                List<string> keys = file.GetKeys(y + "." + script.ID);
-                                foreach (string server in keys)
+                                else
                                 {
-                                    count3 += file.ReadDouble(y + "." + script.ID + "." + server + "." + data, 0);
+                                    graphvalues[currentvalue.Key].Add(0);
                                 }
-                                int keycount = keys.Count;
-                                if (keycount < 1)
-                                {
-                                    keycount = 1;
-                                }
-                                count3 /= keycount;
-                                if (highest < count3)
-                                {
-                                    highest = Convert.ToInt32(Math.Ceiling(count3));
-                                }
-                                graphvalues.Add(count3);
-                                break;
+                            }
+                        countsize++;
                         }
                     }
+                return GraphRenderer.MultiLineGraph(script.Name, graphvalues, highest, Math.Ceiling(highest / 10.0), days, 24, labels);
                 }
             }
-            return GraphRenderer.BasicLineGraph(script.Name, graphvalues, highest, Math.Ceiling(highest / 10.0), days, 24, labels);
-           // return "http://neo.mcmonkey.org/graph_api/graph_line.png?title=" + script.Name + "&show_points=false&width=1000&Height=500&xtitle=Days&ytitle=Amount&ynotches=" + Math.Ceiling(highest / 10.0) + "&xnotches=1&xsteps=0.04166&xend=" + days + "&max=" + highest + "&values=" + graphvalues.ToString().Substring(1) + "&xstart=0&match_xsteps=true&xlabels=" + labels.ToString().Substring(1);
+            return null;
         }
-
     }
 }
