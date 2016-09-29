@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using YAMLHelper;
 using System.IO;
+using System.Threading;
 
 namespace Script_Tracker
 {
@@ -40,6 +41,32 @@ namespace Script_Tracker
                     {
                         IRCBot bottymcbotface = new IRCBot();
                         bottymcbotface.Start("irc.esper.net", 6667, "#denizen-dev");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.ToString());
+                    }
+                }
+            });
+            Task.Factory.StartNew(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1000 * 60 * 10);
+                    try
+                    {
+                        int lastID = ScriptTable.Last().ID + 1;
+                        string result = client.GetStringAsync("http://one.denizenscript.com/denizen/repo/entry/" + lastID).Result;
+                        if (result == null)
+                        {
+                            continue;
+                        }
+                        string name = result.After("<title>").Before(" by ");
+                        if ((name == "") || (name.StartsWith("Invalid paste number")))
+                        {
+                            continue;
+                        }
+                        LoadDatabase();
                     }
                     catch (Exception ex)
                     {
@@ -103,9 +130,9 @@ namespace Script_Tracker
             }
         }
         static List<Script> ScriptTable = new List<Script>();
+        static HttpClient client = new HttpClient();
         public static KeyValuePair<int, int> LoadDatabase()
         {
-            HttpClient client = new HttpClient();
             int i = 0;
             List<string> authors = new List<string>();
             List<Script> templist = new List<Script>();
