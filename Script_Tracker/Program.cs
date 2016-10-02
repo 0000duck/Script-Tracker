@@ -13,7 +13,7 @@ namespace Script_Tracker
 {
     class Program
     {
-        static DateTime StartTime = new DateTime();
+        public static DateTime StartTime = new DateTime();
         static void Main(string[] args)
         {
             Console.WriteLine("Starting server.");
@@ -132,7 +132,7 @@ namespace Script_Tracker
                 }
             }
         }
-        static List<Script> ScriptTable = new List<Script>();
+        public static List<Script> ScriptTable = new List<Script>();
         static HttpClient client = new HttpClient();
         public static KeyValuePair<int, int> LoadDatabase()
         {

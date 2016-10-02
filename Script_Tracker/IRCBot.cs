@@ -285,6 +285,18 @@ namespace Script_Tracker
                                             });
                                             break;
                                         }
+                                    case "status":
+                                        {
+                                            int uptime = DateTime.UtcNow.Subtract(Program.StartTime).Minutes;
+                                            int pings = 0;
+                                            foreach (KeyValuePair<Script, List<DateTime>> current in Program.RTTracking)
+                                            {
+                                                pings += current.Value.Count;
+                                            }
+                                            Sendchat(S_DARKBLUE + "Uptime: " + S_CYAN + uptime + " min " + S_DARKBLUE + "- Scripts: " + S_CYAN + Program.ScriptTable.Count
+                                                + S_DARKBLUE + " - Active Scripts: " + S_CYAN + Program.RTTracking.Count + S_DARKBLUE + " - Pings Per Hour: " + S_CYAN + pings, channel);
+                                            break;
+                                        }
                                 }
                               //  Sendchat(S_DARKBLUE + "yo", channel);
                             }
