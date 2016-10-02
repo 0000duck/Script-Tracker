@@ -18,7 +18,7 @@ namespace Script_Tracker
         {
             Console.WriteLine("Starting server.");
 
-            StartTime = DateTime.Now;
+            StartTime = DateTime.Now.ToUniversalTime();
             LoadDatabase();
 
             Task.Factory.StartNew(() =>
