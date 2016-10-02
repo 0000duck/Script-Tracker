@@ -287,7 +287,7 @@ namespace Script_Tracker
                                         }
                                     case "status":
                                         {
-                                            int uptime = DateTime.UtcNow.Subtract(Program.StartTime).Minutes;
+                                            int uptime = (int)Math.Floor(DateTime.UtcNow.Subtract(Program.StartTime).TotalMinutes);
                                             int pings = 0;
                                             foreach (KeyValuePair<Script, List<DateTime>> current in Program.RTTracking)
                                             {

@@ -249,7 +249,7 @@ namespace Script_Tracker
                     List<DateTime> newlist = new List<DateTime>();
                     foreach (DateTime CurrentStamp in current.Value)
                     {
-                        if (timestamp.Subtract(CurrentStamp).Minutes < 60)
+                        if (timestamp.Subtract(CurrentStamp).TotalMinutes < 60)
                         {
                             newlist.Add(CurrentStamp);
                         }
@@ -275,7 +275,7 @@ namespace Script_Tracker
                     List<DateTime> newlist = new List<DateTime>();
                     foreach (DateTime CurrentStamp in current.Value)
                     {
-                        if (timestamp.Subtract(CurrentStamp).Minutes < 60)
+                        if (timestamp.Subtract(CurrentStamp).TotalMinutes < 60)
                         {
                             newlist.Add(CurrentStamp);
                         }
@@ -398,7 +398,7 @@ namespace Script_Tracker
             string fileID = GetFileIDForTimestamp(timestamp);
 
 
-            if (timestamp.Subtract(StartTime).Minutes < 60)
+            if (timestamp.Subtract(StartTime).TotalMinutes < 60)
             {
                 YAMLConfiguration log = getlog(fileID);
                 foreach (Script script in ScriptTable)
