@@ -13,11 +13,14 @@ namespace Script_Tracker
 {
     class Program
     {
+        static DateTime StartTime = new DateTime();
         static void Main(string[] args)
         {
             Console.WriteLine("Starting server.");
 
+            StartTime = DateTime.Now;
             LoadDatabase();
+
             Task.Factory.StartNew(() =>
             {
                 while (true)
@@ -230,7 +233,62 @@ namespace Script_Tracker
             File.WriteAllText("logs/" + fileID + ".yml", log.SaveToString());
             byte[] data2 = Encoding.UTF8.GetBytes("SUCCESS! We successfully recieved your data. Thank your for your contribution.");
             request.Response.OutputStream.Write(data2, 0, data2.Length);
+            AddRTTrackingInput(script);
         }
+
+
+
+        public static List<KeyValuePair<Script, List<DateTime>>> RTTracking = new List<KeyValuePair<Script, List<DateTime>>>();
+        public static void AddRTTrackingInput(Script script)
+        {
+            DateTime timestamp = DateTime.Now.ToUniversalTime();
+            foreach (KeyValuePair<Script, List<DateTime>> current in RTTracking)
+            {
+                if (current.Key == script)
+                {
+                    List<DateTime> newlist = new List<DateTime>();
+                    foreach (DateTime CurrentStamp in current.Value)
+                    {
+                        if (timestamp.Subtract(CurrentStamp).Minutes < 60)
+                        {
+                            newlist.Add(CurrentStamp);
+                        }
+                    }
+                    newlist.Add(timestamp);
+                    RTTracking.Remove(current);
+                    RTTracking.Add(new KeyValuePair<Script, List<DateTime>>(script, newlist));
+                    return;
+                }
+            }
+            RTTracking.Add(new KeyValuePair<Script, List<DateTime>>(script, new List<DateTime>() {timestamp}));
+            return;
+        }
+
+
+        public static int GetRTservers(Script script)
+        {
+            DateTime timestamp = DateTime.Now.ToUniversalTime();
+            foreach (KeyValuePair<Script, List<DateTime>> current in RTTracking)
+            {
+                if (current.Key == script)
+                {
+                    List<DateTime> newlist = new List<DateTime>();
+                    foreach (DateTime CurrentStamp in current.Value)
+                    {
+                        if (timestamp.Subtract(CurrentStamp).Minutes < 60)
+                        {
+                            newlist.Add(CurrentStamp);
+                        }
+                    }
+                    RTTracking.Remove(current);
+                    RTTracking.Add(new KeyValuePair<Script, List<DateTime>>(script, newlist));
+                    return newlist.Count;
+                }
+            }
+            return 0;
+        }
+
+
         static Dictionary<string, YAMLConfiguration> LoadedLogs = new Dictionary<string, YAMLConfiguration>();
         public static Script GetScript(int ID)
         {
@@ -336,14 +394,28 @@ namespace Script_Tracker
         public static List<KeyValuePair<Script, int>> getpopular(int amount)
         {
             List<KeyValuePair<Script, int>> popular  = new List<KeyValuePair<Script, int>>();
-            DateTime timestamp = DateTime.Now.ToUniversalTime().AddHours(-1);
+            DateTime timestamp = DateTime.Now.ToUniversalTime();
             string fileID = GetFileIDForTimestamp(timestamp);
-            YAMLConfiguration log = getlog(fileID);
-            foreach (Script script in ScriptTable)
+
+
+            if (timestamp.Subtract(StartTime).Minutes < 60)
             {
-                int servers = log.GetKeys(timestamp.Hour + "." + script.ID).Count;
-                popular.Add(new KeyValuePair<Script, int>(script, servers));
+                YAMLConfiguration log = getlog(fileID);
+                foreach (Script script in ScriptTable)
+                {
+                    int servers = log.GetKeys(timestamp.AddHours(-1).Hour + "." + script.ID).Count;
+                    popular.Add(new KeyValuePair<Script, int>(script, servers));
+                }
             }
+            else
+            {
+                foreach (Script script in ScriptTable)
+                {
+                    int servers = GetRTservers(script);
+                    popular.Add(new KeyValuePair<Script, int>(script, servers));
+                }
+            }
+
             popular.Sort((one, two) => two.Value.CompareTo(one.Value));
             sortedscripts = popular;
             return popular.GetRange(0, amount > popular.Count ? popular.Count : amount);
