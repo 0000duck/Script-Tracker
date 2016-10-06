@@ -244,11 +244,11 @@ namespace Script_Tracker
             List<DateTime> newlist = new List<DateTime>();
             foreach (DateTime CurrentStamp in script.RealTimePings)
             {
-                    if (timestamp.Subtract(CurrentStamp).TotalMinutes < 60)
-                    {
-                        newlist.Add(CurrentStamp);
-                    }
+                if (timestamp.Subtract(CurrentStamp).TotalMinutes < 60)
+                {
+                    newlist.Add(CurrentStamp);
                 }
+            }
             newlist.Add(timestamp);
             script.RealTimePings = newlist;
             }
