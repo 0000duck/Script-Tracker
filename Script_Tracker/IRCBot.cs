@@ -288,20 +288,19 @@ namespace Script_Tracker
                                     case "status":
                                         {
                                             int uptime = (int)Math.Floor(DateTime.UtcNow.Subtract(Program.StartTime).TotalMinutes);
+                                            int ActiveScripts = 0;
                                             int pings = 0;
-                                            foreach (KeyValuePair<Script, List<DateTime>> current in Program.RTTracking)
+                                            foreach (Script script in Program.ScriptTable)
                                             {
-                                                if (current.Value.Count == 0)
+                                                int scriptpings = Program.GetRTservers(script);
+                                                if (scriptpings > 0)
                                                 {
-                                                    Program.RTTracking.Remove(current);
-                                                }
-                                                 else
-                                                {
-                                                    pings += current.Value.Count;
+                                                    ActiveScripts++;
+                                                    pings += scriptpings;
                                                 }
                                             }
                                             Sendchat(S_DARKBLUE + "Uptime: " + S_CYAN + uptime + " min " + S_DARKBLUE + "- Scripts: " + S_CYAN + Program.ScriptTable.Count
-                                                + S_DARKBLUE + " - Active Scripts: " + S_CYAN + Program.RTTracking.Count + S_DARKBLUE + " - Pings Per Hour: " + S_CYAN + pings, channel);
+                                                + S_DARKBLUE + " - Active Scripts: " + S_CYAN + ActiveScripts + S_DARKBLUE + " - Pings Per Hour: " + S_CYAN + pings, channel);
                                             break;
                                         }
                                 }

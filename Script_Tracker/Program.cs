@@ -168,7 +168,7 @@ namespace Script_Tracker
                             publicdata = new List<string>(arglist["public_data"].SplitFast(','));
                         }
                     }
-                    Script script = new Script(i, name, author, publicdata);
+                    Script script = new Script(i, name, author, publicdata, new List<DateTime>());
                     templist.Add(script);
                     if (!authors.Contains(script.Author))
                     {
@@ -238,54 +238,35 @@ namespace Script_Tracker
 
 
 
-        public static List<KeyValuePair<Script, List<DateTime>>> RTTracking = new List<KeyValuePair<Script, List<DateTime>>>();
         public static void AddRTTrackingInput(Script script)
         {
             DateTime timestamp = DateTime.Now.ToUniversalTime();
-            foreach (KeyValuePair<Script, List<DateTime>> current in RTTracking)
+            List<DateTime> newlist = new List<DateTime>();
+            foreach (DateTime CurrentStamp in script.RealTimePings)
             {
-                if (current.Key == script)
-                {
-                    List<DateTime> newlist = new List<DateTime>();
-                    foreach (DateTime CurrentStamp in current.Value)
+                    if (timestamp.Subtract(CurrentStamp).TotalMinutes < 60)
                     {
-                        if (timestamp.Subtract(CurrentStamp).TotalMinutes < 60)
-                        {
-                            newlist.Add(CurrentStamp);
-                        }
+                        newlist.Add(CurrentStamp);
                     }
-                    newlist.Add(timestamp);
-                    RTTracking.Remove(current);
-                    RTTracking.Add(new KeyValuePair<Script, List<DateTime>>(script, newlist));
-                    return;
                 }
+            newlist.Add(timestamp);
+            script.RealTimePings = newlist;
             }
-            RTTracking.Add(new KeyValuePair<Script, List<DateTime>>(script, new List<DateTime>() {timestamp}));
-            return;
-        }
 
 
         public static int GetRTservers(Script script)
         {
             DateTime timestamp = DateTime.Now.ToUniversalTime();
-            foreach (KeyValuePair<Script, List<DateTime>> current in RTTracking)
+            List<DateTime> newlist = new List<DateTime>();
+            foreach (DateTime CurrentStamp in script.RealTimePings)
             {
-                if (current.Key == script)
+                if (timestamp.Subtract(CurrentStamp).TotalMinutes < 60)
                 {
-                    List<DateTime> newlist = new List<DateTime>();
-                    foreach (DateTime CurrentStamp in current.Value)
-                    {
-                        if (timestamp.Subtract(CurrentStamp).TotalMinutes < 60)
-                        {
-                            newlist.Add(CurrentStamp);
-                        }
-                    }
-                    RTTracking.Remove(current);
-                    RTTracking.Add(new KeyValuePair<Script, List<DateTime>>(script, newlist));
-                    return newlist.Count;
+                    newlist.Add(CurrentStamp);
                 }
             }
-            return 0;
+            script.RealTimePings = newlist;
+            return script.RealTimePings.Count;
         }
 
 
