@@ -87,6 +87,45 @@ namespace Script_Tracker
 
 
 
+        public static void getPopularGraph(HttpListenerContext request)
+        {
+            DateTime timestamp = DateTime.Now.ToUniversalTime();
+            Dictionary<string, List<int>> graphvalues = new Dictionary<string, List<int>>();
+            List<string> labels = new List<string>();
+            int highest = 10;
+            int days = 10;
+            List<Script> scripts = new List<Script>();
+            foreach (KeyValuePair<Script, int> scriptvalue in Program.getpopular(10))
+            {
+                scripts.Add(scriptvalue.Key);
+            }
+            for (int i = days - 1; i >= 0; i--)
+            {
+                YAMLConfiguration file = Program.getlog(Program.GetFileIDForTimestamp(timestamp.AddDays(i * -1)));
+                labels.Add(timestamp.AddDays(i * -1).Day + "/" + timestamp.AddDays(i * -1).Month);
+                for (int y = 0; y < 24; y++)
+                {
+                    foreach (Script script in scripts)
+                    {
+                        int amount = file.GetKeys(y + "." + script.ID).Count;
+                        if (!graphvalues.ContainsKey(script.Name))
+                        {
+                            graphvalues.Add(script.Name, new List<int>());
+                        }
+                        graphvalues[script.Name].Add(amount);
+                        if (highest < amount)
+                        {
+                            highest = amount;
+                        }
+                    }
+                }
+            }
+            byte[] output = GraphRenderer.MultiLineGraph("popular", graphvalues, highest+10, Math.Ceiling(highest / 10.0), days, 24, labels);
+            request.Response.OutputStream.Write(output, 0, output.Length);
+        }
+
+
+
         public static string ParseHTML(string htmlpath, Dictionary<string, string> args)
         {
             string HTML = File.ReadAllText(htmlpath);

@@ -112,6 +112,10 @@ namespace Script_Tracker
                             context.Response.ContentType = "image/png";
                             webPages.getGraphImage(context);
                             break;
+                        case "/populargraph":
+                            context.Response.ContentType = "image/png";
+                            webPages.getPopularGraph(context);
+                            break;
                     }
                 }
                 catch(Exception ex)
