@@ -305,8 +305,11 @@ namespace Script_Tracker
                                         }
                                     case "search":
                                         {
-                                            
-                                            string tagsearch = privmsg.After(" ").ToLowerFast();
+                                            string tagsearch = privmsg.ToLowerFast().After("+search ");
+                                            if (String.IsNullOrWhiteSpace(tagsearch))
+                                            {
+                                                Sendchat(S_DARKBLUE + "No tags were specified!", channel);
+                                            }
                                             string[] tags = tagsearch.SplitFast(' ');
                                             Dictionary<Script, int> matches = new Dictionary<Script, int>();
                                             foreach (Script script in Program.ScriptTable)
@@ -315,7 +318,14 @@ namespace Script_Tracker
                                                 {
                                                     if (script.Tags.Contains(tag))
                                                     {
-                                                        matches[script]++;
+                                                        if (matches.ContainsKey(script))
+                                                        {
+                                                            matches[script]++;
+                                                        }
+                                                        else
+                                                        {
+                                                            matches.Add(script, 1);
+                                                        }
                                                     }
                                                 }
                                             }
