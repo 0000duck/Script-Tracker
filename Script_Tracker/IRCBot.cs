@@ -344,7 +344,14 @@ namespace Script_Tracker
                                                     }
                                                 }
                                             }
-                                            List<KeyValuePair<Script, int>> matchlist = matches.ToList();
+                                            List<KeyValuePair<Script, int>> matchlist = new List<KeyValuePair<Script, int>>();
+                                            foreach (KeyValuePair<Script, int> matchresult in matches)
+                                            {
+                                                if (matchresult.Value != 0)
+                                                {
+                                                    matchlist.Add(matchresult);
+                                                }
+                                            }
                                             if (matchlist.Count == 0)
                                             {
                                                 Sendchat(S_DARKBLUE + "No scripts were found with the tags '" + S_CYAN + tagsearch + "'.", channel);

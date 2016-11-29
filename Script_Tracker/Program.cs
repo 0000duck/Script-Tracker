@@ -160,6 +160,9 @@ namespace Script_Tracker
                     string author = result.After(" by ").Before(" ");
                     List<string> publicdata = new List<string>();
                     List<string> tags = new List<string>();
+                    tags.Add(author.ToLowerFast());
+                    tags.Add(name.ToLowerFast());
+                    tags.Add(i.ToString());
                     if (result.ToLowerFast().Contains("&lt;--script-tracker--&gt;") && result.ToLowerFast().Contains("&lt;--!script-tracker--&gt;"))
                     {
                         string arguments = result.ToLowerFast().After("&lt;--script-tracker--&gt;").Before("&lt;--!script-tracker--&gt;");
@@ -174,7 +177,7 @@ namespace Script_Tracker
                         }
                         if (arglist.ContainsKey("tags"))
                         {
-                            tags = new List<string>(arglist["tags"].SplitFast(','));
+                            tags.AddRange(arglist["tags"].SplitFast(',').ToList());
                         }
                     }
                     Script script = new Script(i, name, author, publicdata, new List<DateTime>(), tags);
