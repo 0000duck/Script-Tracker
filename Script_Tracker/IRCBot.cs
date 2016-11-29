@@ -316,16 +316,31 @@ namespace Script_Tracker
                                             {
                                                 foreach (String tag in tags)
                                                 {
-                                                    if (script.Tags.Contains(tag))
+                                                    int weight = 0;
+
+                                                    foreach (string scripttag in script.Tags)
                                                     {
-                                                        if (matches.ContainsKey(script))
+                                                        if (scripttag == tag)
                                                         {
-                                                            matches[script]++;
+                                                            weight += 10;
                                                         }
-                                                        else
+                                                         else if (scripttag.StartsWith(tag))
                                                         {
-                                                            matches.Add(script, 1);
+                                                            weight += 5;
                                                         }
+                                                        else if (scripttag.Contains(tag))
+                                                        {
+                                                            weight += 1;
+                                                        }
+                                                    }
+
+                                                    if (matches.ContainsKey(script))
+                                                    {
+                                                        matches[script] += weight;
+                                                    }
+                                                    else
+                                                    {
+                                                        matches.Add(script, weight);
                                                     }
                                                 }
                                             }
