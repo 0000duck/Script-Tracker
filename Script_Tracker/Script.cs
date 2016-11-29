@@ -8,13 +8,14 @@ namespace Script_Tracker
 {
     class Script
     {
-        public Script(int id, string name, string author, List<string> publicdata, List<DateTime> realtimepings)
+        public Script(int id, string name, string author, List<string> publicdata, List<DateTime> realtimepings, List<string> tags)
         {
             ID = id;
             Name = name;
             Author = author;
             PublicData = publicdata;
             RealTimePings = realtimepings;
+            Tags = tags;
         }
         public int ID = -1;
         public string Name = null;
@@ -22,5 +23,6 @@ namespace Script_Tracker
         public List<string> PublicData = new List<string>();
         public Dictionary<string, KeyValuePair<int, DateTime>> FloodControl = new Dictionary<string, KeyValuePair<int, DateTime>>();
         public List<DateTime> RealTimePings = new List<DateTime>();
+        public List<string> Tags = new List<string>();
     }
 }

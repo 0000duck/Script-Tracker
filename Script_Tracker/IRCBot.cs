@@ -303,6 +303,57 @@ namespace Script_Tracker
                                                 + S_DARKBLUE + " - Active Scripts: " + S_CYAN + ActiveScripts + S_DARKBLUE + " - Pings Per Hour: " + S_CYAN + pings, channel);
                                             break;
                                         }
+                                    case "search":
+                                        {
+                                            
+                                            string tagsearch = privmsg.After(" ").ToLowerFast();
+                                            string[] tags = tagsearch.SplitFast(' ');
+                                            Dictionary<Script, int> matches = new Dictionary<Script, int>();
+                                            foreach (Script script in Program.ScriptTable)
+                                            {
+                                                foreach (String tag in tags)
+                                                {
+                                                    if (script.Tags.Contains(tag))
+                                                    {
+                                                        matches[script]++;
+                                                    }
+                                                }
+                                            }
+                                            List<KeyValuePair<Script, int>> matchlist = matches.ToList();
+                                            if (matchlist.Count == 0)
+                                            {
+                                                Sendchat(S_DARKBLUE + "No scripts were found with the tags '" + S_CYAN + tagsearch + "'.", channel);
+                                                break;
+                                            }
+                                            matchlist.Sort((one, two) => two.Value.CompareTo(one.Value));
+                                            StringBuilder result = new StringBuilder();
+                                            int i = 0;
+                                            int max = 5;
+                                            if (matchlist.Count < max)
+                                            {
+                                                max = matchlist.Count;
+                                            }
+                                            foreach (KeyValuePair<Script, int> match in matchlist)
+                                            {
+                                                Script script = match.Key;
+                                                i++;
+                                                result.Append(S_CYAN + script.Name);
+                                                if (i < max - 1)
+                                                {
+                                                    result.Append(S_DARKBLUE + ", ");
+                                                }
+                                                else if (i < max)
+                                                {
+                                                    result.Append(S_DARKBLUE + ", and ");
+                                                }
+                                                else
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            Sendchat(S_DARKBLUE + "Possible results: " + result + ".", channel);
+                                            break;
+                                        }
                                 }
                               //  Sendchat(S_DARKBLUE + "yo", channel);
                             }
