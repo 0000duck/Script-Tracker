@@ -306,12 +306,12 @@ namespace Script_Tracker
                                     case "search":
                                         {
                                             string tagsearch = privmsg.ToLowerFast().Trim();
-                                            if (tagsearch.Substring(8).Length <= 0)
+                                            if (tagsearch.Substring(7).Length <= 0)
                                             {
                                                 Sendchat(S_DARKBLUE + "No tags were specified!", channel);
                                                 break;
                                             }
-                                            tagsearch = tagsearch.Substring(8);
+                                            tagsearch = tagsearch.Substring(7).Trim();
                                             string[] tags = tagsearch.SplitFast(' ');
                                             List<KeyValuePair<Script, int>> matchlist = Program.GetScriptsByTags(tags);
                                             if (matchlist.Count == 0)
