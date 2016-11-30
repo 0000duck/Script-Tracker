@@ -305,59 +305,20 @@ namespace Script_Tracker
                                         }
                                     case "search":
                                         {
-                                            string tagsearch = privmsg.ToLowerFast().After("+search ");
-                                            if (String.IsNullOrWhiteSpace(tagsearch))
+                                            string tagsearch = privmsg.ToLowerFast().Trim();
+                                            if (tagsearch.Substring(8).Length <= 0)
                                             {
                                                 Sendchat(S_DARKBLUE + "No tags were specified!", channel);
-                                            }
-                                            string[] tags = tagsearch.SplitFast(' ');
-                                            Dictionary<Script, int> matches = new Dictionary<Script, int>();
-                                            foreach (Script script in Program.ScriptTable)
-                                            {
-                                                foreach (String tag in tags)
-                                                {
-                                                    int weight = 0;
-
-                                                    foreach (string scripttag in script.Tags)
-                                                    {
-                                                        if (scripttag == tag)
-                                                        {
-                                                            weight += 10;
-                                                        }
-                                                         else if (scripttag.StartsWith(tag))
-                                                        {
-                                                            weight += 5;
-                                                        }
-                                                        else if (scripttag.Contains(tag))
-                                                        {
-                                                            weight += 1;
-                                                        }
-                                                    }
-
-                                                    if (matches.ContainsKey(script))
-                                                    {
-                                                        matches[script] += weight;
-                                                    }
-                                                    else
-                                                    {
-                                                        matches.Add(script, weight);
-                                                    }
-                                                }
-                                            }
-                                            List<KeyValuePair<Script, int>> matchlist = new List<KeyValuePair<Script, int>>();
-                                            foreach (KeyValuePair<Script, int> matchresult in matches)
-                                            {
-                                                if (matchresult.Value != 0)
-                                                {
-                                                    matchlist.Add(matchresult);
-                                                }
-                                            }
-                                            if (matchlist.Count == 0)
-                                            {
-                                                Sendchat(S_DARKBLUE + "No scripts were found with the tags '" + S_CYAN + tagsearch + "'.", channel);
                                                 break;
                                             }
-                                            matchlist.Sort((one, two) => two.Value.CompareTo(one.Value));
+                                            tagsearch = tagsearch.Substring(8);
+                                            string[] tags = tagsearch.SplitFast(' ');
+                                            List<KeyValuePair<Script, int>> matchlist = Program.GetScriptsByTags(tags);
+                                            if (matchlist.Count == 0)
+                                            {
+                                                Sendchat(S_DARKBLUE + "No scripts were found with the tags '" + S_CYAN + tagsearch + S_DARKBLUE + "'.", channel);
+                                                break;
+                                            }
                                             StringBuilder result = new StringBuilder();
                                             int i = 0;
                                             int max = 5;

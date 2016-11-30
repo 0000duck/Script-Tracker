@@ -423,6 +423,57 @@ namespace Script_Tracker
         }
 
 
+        public static List<KeyValuePair<Script, int>> GetScriptsByTags(string[] tags)
+        {
+            Dictionary<Script, int> matches = new Dictionary<Script, int>();
+            foreach (Script script in Program.ScriptTable)
+            {
+                foreach (String tag in tags)
+                {
+                    int weight = 0;
+
+                    foreach (string scripttag in script.Tags)
+                    {
+                        if (scripttag == tag)
+                        {
+                            weight += 10;
+                        }
+                        else if (scripttag.StartsWith(tag))
+                        {
+                            weight += 5;
+                        }
+                        else if (scripttag.Contains(tag))
+                        {
+                            weight += 1;
+                        }
+                    }
+
+                    if (matches.ContainsKey(script))
+                    {
+                        matches[script] += weight;
+                    }
+                    else
+                    {
+                        matches.Add(script, weight);
+                    }
+                }
+            }
+            List<KeyValuePair<Script, int>> matchlist = new List<KeyValuePair<Script, int>>();
+            foreach (KeyValuePair<Script, int> matchresult in matches)
+            {
+                if (matchresult.Value != 0)
+                {
+                    matchlist.Add(matchresult);
+                }
+            }
+            if (matchlist.Count > 0)
+            {
+                matchlist.Sort((one, two) => two.Value.CompareTo(one.Value));
+            }
+            return matchlist;
+        }
+
+
 
 
 
