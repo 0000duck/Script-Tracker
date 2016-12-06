@@ -1,36 +1,38 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
         <script>
-            var script = document.getElementById("script_name");
-            var data = document.getElementById("data_input");
-            var datavalue = document.getElementById("data_value");
-
             function dosearch() {
-                if (script.value == "") {
-                    alert("No script specified!");
-                    return;
-                }
-                var query = "?script=" + script.value;
-                if (data.value != "") {
-                    query += "&data=" + data.value;
-                }
-                if (datavalue.value != "") {
-                    query += "&datavalue=" + datavalue.value;
-                }
-                window.location.replace("/scripts" + query);
-            }
+                var formKeys = ['script_key', 'data_key', 'mode_key', 'datavalue_key', 'days_key']
+                var requiredKeys = ['script_key']
+                var oldvalues = {}
+                var _vals = window.location.search.substr(1).split("&")
+                var queryValues = {}
 
-            $(document).ready(function() {
-                script.value = $.urlParam("script");
-                data.value = $.urlParam("data");
-                datavalue.value = $.urlParam("datavalue");
-            });
-
-            $.urlParam = function(name) {
-                var results = new RegExp('[\\?&]' + name + '=([^&#]*)').exec(window.location.href);
-                if (!results) { 
-                    return "";
+                for(var idx in _vals){
+                    var t = _vals[idx].split('=')
+                    oldvalues[t[0]+"_key"] = t[1]
                 }
-                return results[1] || "";
+                for(var idx in formKeys){
+                    var el = document.getElementById(formKeys[idx])
+                    if (el && el.value){
+                        queryValues[formKeys[idx]] = el.value
+                    }else if (oldvalues[formKeys[idx]]){
+                        queryValues[formKeys[idx]] = oldvalues[formKeys[idx]]
+                    }
+                    if (formKeys[idx].indexOf(requiredKeys) >= 0 && typeof queryValues[formKeys[idx]] == 'undefined') {
+                        alert('No '+ formKeys[idx].replace("_key","") +' specified!');
+                    }
+                }
+
+                for(var idx in queryValues){
+                    if (typeof query == "undefined"){
+                        query = "?"
+                    }else{
+                        query += "&"
+                    }
+                    query += idx.replace("_key","")+"="+queryValues[idx]
+                }
+
+                window.location.href = "/scripts" + query;
             }
         </script>
 
@@ -40,27 +42,27 @@
                     <div class="row">
                         <div class="col-md-10 col-md-offset-1">
                             <div class="form-group">
-                                <input type="text" class="form-control" id="script_name" placeholder="Script name">
+                                <input type="text" class="form-control" id="script_key" placeholder="Script name">
                             </div>
                         </div>
                     </div>
                     <div class="row text-center">
                         <div class="form-inline">
                             <div class="form-group">
-                                <label for="data_input">Data</label>
-                                <input type="text" class="form-control" id="data_input" placeholder="Data">
+                                <label for="data_key">Data</label>
+                                <input type="text" class="form-control" id="data_key" placeholder="Data">
                             </div>
                             <div class="form-group">
-                                <label for="mode_input" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom">Mode</label>
-                                <input type="text" class="form-control" id="mode_input" placeholder="Mode">
+                                <label for="mode_key" data-toggle="tooltip" data-placement="bottom" title="Tooltip on bottom">Mode</label>
+                                <input type="text" class="form-control" id="mode_key" placeholder="Mode">
                             </div>
                             <div class="form-group">
-                                <label for="data_value">Data Value</label>
-                                <input type="text" class="form-control" id="data_value" placeholder="Data Value">
+                                <label for="datavalue_key">Data Value</label>
+                                <input type="text" class="form-control" id="datavalue_key" placeholder="Data Value">
                             </div>
                             <div class="form-group">
-                                <label for="days_input">Days</label>
-                                <input type="text" class="form-control" id="days_input" placeholder="Days">
+                                <label for="days_key">Days</label>
+                                <input type="text" class="form-control" id="days_key" placeholder="Days">
                             </div>
                             <button type="submit" class="btn btn-primary" onclick="dosearch()">Search</button>
                         </div>
