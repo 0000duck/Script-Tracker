@@ -3,6 +3,7 @@
             function dosearch() {
                 var formKeys = ['script_key', 'data_key', 'mode_key', 'datavalue_key', 'days_key']
                 var requiredKeys = ['script_key']
+                var clearKey = ['script_key']
                 var oldvalues = {}
                 var _vals = window.location.search.substr(1).split("&")
                 var queryValues = {}
@@ -11,6 +12,12 @@
                     var t = _vals[idx].split('=')
                     oldvalues[t[0]+"_key"] = t[1]
                 }
+
+                var cc_el = document.getElementById(clearKey)
+                if (cc_el && cc_el.value && cc_el.value != oldvalues[clearKey]){
+                    oldvalues = {}
+                }
+
                 for(var idx in formKeys){
                     var el = document.getElementById(formKeys[idx])
                     if (el && el.value){
