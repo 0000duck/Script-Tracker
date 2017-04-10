@@ -32,6 +32,7 @@ namespace Script_Tracker
             if (DateTime.UtcNow.Subtract(LastRankSort).TotalHours > 1)
             {
                 Program.getpopular(999);
+                LastRankSort = DateTime.UtcNow;
             }
 
             int rank = 0;
