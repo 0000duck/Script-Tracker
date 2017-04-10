@@ -24,5 +24,28 @@ namespace Script_Tracker
         public Dictionary<string, KeyValuePair<int, DateTime>> FloodControl = new Dictionary<string, KeyValuePair<int, DateTime>>();
         public List<DateTime> RealTimePings = new List<DateTime>();
         public List<string> Tags = new List<string>();
+
+
+        public static DateTime LastRankSort = DateTime.UtcNow;
+        public int GetRank()
+        {
+            if (DateTime.UtcNow.Subtract(LastRankSort).TotalHours > 1)
+            {
+                Program.getpopular(999);
+            }
+
+            int rank = 0;
+            foreach (KeyValuePair<Script, int> sortedscript in Program.sortedscripts)
+            {
+                rank++;
+                if (this == sortedscript.Key)
+                {
+                    return rank;
+                }
+            }
+
+            return rank;
+        }
+
     }
 }

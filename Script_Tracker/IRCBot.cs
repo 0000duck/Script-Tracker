@@ -177,8 +177,7 @@ namespace Script_Tracker
                                             DateTime timestamp = DateTime.Now.ToUniversalTime().AddHours(-1);
                                             string fileID = Program.GetFileIDForTimestamp(timestamp);
                                             int servers = Program.getlog(fileID).GetKeys(timestamp.Hour + "." + script.ID).Count;
-                                            KeyValuePair<Script, int> indexsearch = new KeyValuePair<Script, int>(script, servers);
-                                            int rank = Program.sortedscripts.IndexOf(indexsearch) + 1;
+                                            int rank = script.GetRank();
                                             Sendchat(S_DARKBLUE + "Script: " + S_CYAN + script.Name + S_DARKBLUE + " - Author: " + S_CYAN + script.Author + S_DARKBLUE + " - Rank: " + S_CYAN + rank +
                                                 S_DARKBLUE + " - Servers: " + S_CYAN + servers + S_DARKBLUE +
                                                 " - Link: http://one.denizenscript.com/denizen/repo/entry/" + script.ID, channel);
