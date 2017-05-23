@@ -119,241 +119,287 @@ namespace Script_Tracker
                             {
                                 Notice(user.Substring(0, user.IndexOf('!')), privmsg);
                             }
+
+
+                            if (user.ToLowerInvariant().Contains("denizenrelay"))
+                            {
+                                string stripped = StripColor(privmsg);
+                                if (stripped.StartsWith("[Discord] ["))
+                                {
+                                    int ind = stripped.IndexOf("] says: ");
+                                    stripped = stripped.Substring(ind + "] says: ".Length).Trim();
+                                    privmsg = stripped;
+                                }
+                            }
+
                             if (privmsg.StartsWith("+"))
                             {
-                                switch (privmsg.Substring(1).Before(" ").ToLowerFast())
-                                {
-                                    case "how":
-                                    case "howto":
-                                        Sendchat(S_DARKBLUE + "To start listing your own script, simply follow the explanation on http://stats.denizenscript.com/howto", channel);
-                                        break;
-                                    case "halp":
-                                    case "help":
-                                        Sendchat(S_DARKBLUE + "I know of these commands: +popular, +script <script>, +author <author>, +howto, and +help", channel);
-                                        break;
-                                    case "pop":
-                                    case "popular":
-                                        {
-                                            List<KeyValuePair<Script, int>> popular = Program.getpopular(5);
-                                            StringBuilder result = new StringBuilder();
-                                            result.Append(S_DARKBLUE + "Popular scripts: ");
-                                            int i = 0;
-                                            foreach (KeyValuePair<Script, int> pair in popular)
-                                            {
-                                                i++;
-                                                result.Append(S_DARKBLUE + i + ". " + S_CYAN + pair.Key.Name + " " + S_GRAY + "(" + pair.Value + ")");
-                                                if (i < popular.Count - 1)
-                                                {
-                                                    result.Append(S_DARKBLUE + ", ");
-                                                }
-                                                else if (i < popular.Count)
-                                                {
-                                                    result.Append(S_DARKBLUE + ", and ");
-                                                }
-                                                else
-                                                {
-                                                    result.Append(S_DARKBLUE + " ");
-                                                }
-                                            }
-                                            result.Append(S_DARKBLUE + "- http://stats.denizenscript.com/popular");
-                                            Sendchat(S_DARKBLUE + result.ToString(), channel);
-                                            break;
-                                        }
-                                    case "script":
-                                    case "s":
-                                        {
-                                            string search = privmsg.After(" ");
-                                            if (string.IsNullOrWhiteSpace(search))
-                                            {
-                                                Sendchat(S_DARKBLUE + "No script specified!", channel);
-                                                break;
-                                            }
-                                            Script script = Program.GetScript(search);
-                                            if (script == null)
-                                            {
-                                                Sendchat(S_DARKBLUE + "No info found on this script.", channel);
-                                                break;
-                                            }
-                                            DateTime timestamp = DateTime.Now.ToUniversalTime().AddHours(-1);
-                                            string fileID = Program.GetFileIDForTimestamp(timestamp);
-                                            int servers = Program.getlog(fileID).GetKeys(timestamp.Hour + "." + script.ID).Count;
-                                            int rank = script.GetRank();
-                                            Sendchat(S_DARKBLUE + "Script: " + S_CYAN + script.Name + S_DARKBLUE + " - Author: " + S_CYAN + script.Author + S_DARKBLUE + " - Rank: " + S_CYAN + rank +
-                                                S_DARKBLUE + " - Servers: " + S_CYAN + servers + S_DARKBLUE +
-                                                " - Link: http://one.denizenscript.com/denizen/repo/entry/" + script.ID, channel);
-                                            break;
-                                        }
-                                    case "r":
-                                    case "rank":
-                                        {
-                                            string search = privmsg.After(" ").Trim();
-                                            int result;
-                                            if (int.TryParse(search, out result))
-                                            {
-                                                if (Program.sortedscripts.Count < result || result < 1)
-                                                {
-                                                    Sendchat(S_DARKBLUE + "There aren't this many scripts!", channel);
-                                                }
-                                                else
-                                                {
-                                                    Script script = Program.getpopular(999)[result - 1].Key;
-                                                    DateTime timestamp = DateTime.Now.ToUniversalTime().AddHours(-1);
-                                                    string fileID = Program.GetFileIDForTimestamp(timestamp);
-                                                    int servers = Program.getlog(fileID).GetKeys(timestamp.Hour + "." + script.ID).Count;
-                                                    Sendchat(S_DARKBLUE + "Script: " + S_CYAN + script.Name + S_DARKBLUE + " - Author: " + S_CYAN + script.Author + S_DARKBLUE + " - Rank: " + S_CYAN + result +
-                                                        S_DARKBLUE + " - Servers: " + S_CYAN + servers + S_DARKBLUE +
-                                                        " - Link: http://one.denizenscript.com/denizen/repo/entry/" + script.ID, channel);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                Sendchat(S_DARKBLUE + "This is not a valid rank!", channel);
-                                            }
-                                            break;
-                                        }
-                                    case "author":
-                                    case "auth":
-                                    case "au":
-                                    case "a":
-                                        {
-                                            string search = privmsg.After(" ").Trim();
-                                            if (string.IsNullOrWhiteSpace(search))
-                                            {
-                                                Sendchat(S_DARKBLUE + "No author specified!", channel);
-                                                break;
-                                            }
-                                            List<Script> scripts = Program.getScriptsByAuthor(search);
-                                            if (scripts.Count == 0)
-                                            {
-                                                Sendchat(S_DARKBLUE + "No info found on this author.", channel);
-                                                break;
-                                            }
-                                            StringBuilder result = new StringBuilder();
-                                            int i = 0;
-                                            int max = 10;
-                                            if (scripts.Count < max)
-                                            {
-                                                max = scripts.Count;
-                                            }
-                                            foreach (Script script in scripts)
-                                            {
-                                                i++;
-                                                result.Append(S_CYAN + script.Name);
-                                                if (i < max - 1)
-                                                {
-                                                    result.Append(S_DARKBLUE + ", ");
-                                                }
-                                                else if (i < max)
-                                                {
-                                                    result.Append(S_DARKBLUE + ", and ");
-                                                }
-                                                else
-                                                {
-                                                    break;
-                                                }
-                                            }
-                                            string end;
-                                            if (scripts.Count > max)
-                                            {
-                                                int remainder = scripts.Count - max;
-                                                end = S_GRAY + " (and " + remainder + " more!)";
-                                            }
-                                            else
-                                            {
-                                                end = ".";
-                                            }
-                                            Sendchat(S_DARKBLUE + search + " has written " + scripts.Count + " script(s): " + result + end, channel);
-                                            break;
-                                        }
-                                    case "collect":
-                                        {
-                                            if (DateTime.Now.Subtract(CollectCooldown).TotalMinutes < 10)
-                                            {
-                                                Sendchat(S_DARKBLUE + "I already did this too recently!" + S_GRAY + " (10m cooldown)", channel);
-                                                break;
-                                            }
-                                            CollectCooldown = DateTime.Now;
-                                            Task.Factory.StartNew(() =>
-                                            {
-                                                Sendchat(S_DARKBLUE + "Reloading database from the script repository...", channel);
-                                                KeyValuePair<int, int> result = Program.LoadDatabase();
-                                                int amount = result.Key;
-                                                int authors = result.Value;
-                                                Sendchat(S_DARKBLUE + "Reloaded database. I now know of " + S_CYAN + amount + S_DARKBLUE + " scripts from " 
-                                                    + S_CYAN + authors + S_DARKBLUE + " authors.", channel);
-                                            });
-                                            break;
-                                        }
-                                    case "status":
-                                        {
-                                            int uptime = (int)Math.Floor(DateTime.UtcNow.Subtract(Program.StartTime).TotalMinutes);
-                                            int ActiveScripts = 0;
-                                            int pings = 0;
-                                            foreach (Script script in Program.ScriptTable)
-                                            {
-                                                int scriptpings = Program.GetRTservers(script);
-                                                if (scriptpings > 0)
-                                                {
-                                                    ActiveScripts++;
-                                                    pings += scriptpings;
-                                                }
-                                            }
-                                            Sendchat(S_DARKBLUE + "Uptime: " + S_CYAN + uptime + " min " + S_DARKBLUE + "- Scripts: " + S_CYAN + Program.ScriptTable.Count
-                                                + S_DARKBLUE + " - Active Scripts: " + S_CYAN + ActiveScripts + S_DARKBLUE + " - Pings Per Hour: " + S_CYAN + pings, channel);
-                                            break;
-                                        }
-                                    case "search":
-                                        {
-                                            string tagsearch = privmsg.ToLowerFast().Trim();
-                                            if (tagsearch.Substring(7).Length <= 0)
-                                            {
-                                                Sendchat(S_DARKBLUE + "No tags were specified!", channel);
-                                                break;
-                                            }
-                                            tagsearch = tagsearch.Substring(7).Trim();
-                                            string[] tags = tagsearch.SplitFast(' ');
-                                            List<KeyValuePair<Script, int>> matchlist = Program.GetScriptsByTags(tags);
-                                            if (matchlist.Count == 0)
-                                            {
-                                                Sendchat(S_DARKBLUE + "No scripts were found with the tags '" + S_CYAN + tagsearch + S_DARKBLUE + "'.", channel);
-                                                break;
-                                            }
-                                            StringBuilder result = new StringBuilder();
-                                            int i = 0;
-                                            int max = 5;
-                                            if (matchlist.Count < max)
-                                            {
-                                                max = matchlist.Count;
-                                            }
-                                            foreach (KeyValuePair<Script, int> match in matchlist)
-                                            {
-                                                Script script = match.Key;
-                                                i++;
-                                                result.Append(S_CYAN + script.Name);
-                                                if (i < max - 1)
-                                                {
-                                                    result.Append(S_DARKBLUE + ", ");
-                                                }
-                                                else if (i < max)
-                                                {
-                                                    result.Append(S_DARKBLUE + ", and ");
-                                                }
-                                                else
-                                                {
-                                                    break;
-                                                }
-                                            }
-                                            Sendchat(S_DARKBLUE + "Possible results: " + result + ".", channel);
-                                            break;
-                                        }
-                                }
-                              //  Sendchat(S_DARKBLUE + "yo", channel);
+                                HandleCommand(privmsg.After("+"), channel);
                             }
                             break;
                     }
                 }
             }
         }
+
+
+        public void HandleCommand(string commandargs, string channel)
+        {
+            try
+            {
+
+                if (commandargs == null)
+                {
+                    return;
+                }
+
+                string[] args = commandargs.SplitFast(' ');
+
+                switch (args[0].ToLowerFast())
+                {
+                    case "how":
+                    case "howto":
+                        Sendchat(S_DARKBLUE + "To start listing your own script, simply follow the explanation on http://stats.denizenscript.com/howto", channel);
+                        break;
+                    case "halp":
+                    case "help":
+                        Sendchat(S_DARKBLUE + "I know of these commands: +popular, +script <script>, +author <author>, +search <tags>, +howto, and +help", channel);
+                        break;
+                    case "pop":
+                    case "popular":
+                        {
+                            List<KeyValuePair<Script, int>> popular = Program.getpopular(5);
+                            StringBuilder result = new StringBuilder();
+                            result.Append(S_DARKBLUE + "Popular scripts: ");
+                            int i = 0;
+                            foreach (KeyValuePair<Script, int> pair in popular)
+                            {
+                                i++;
+                                result.Append(S_DARKBLUE + i + ". " + S_CYAN + pair.Key.Name + " " + S_GRAY + "(" + pair.Value + ")");
+                                if (i < popular.Count - 1)
+                                {
+                                    result.Append(S_DARKBLUE + ", ");
+                                }
+                                else if (i < popular.Count)
+                                {
+                                    result.Append(S_DARKBLUE + ", and ");
+                                }
+                                else
+                                {
+                                    result.Append(S_DARKBLUE + " ");
+                                }
+                            }
+                            result.Append(S_DARKBLUE + "- http://stats.denizenscript.com/popular");
+                            Sendchat(S_DARKBLUE + result.ToString(), channel);
+                            break;
+                        }
+                    case "script":
+                    case "s":
+                        {
+                            string search = commandargs.After(args[0] + " ");
+                            if (string.IsNullOrWhiteSpace(search))
+                            {
+                                Sendchat(S_DARKBLUE + "No script specified!", channel);
+                                break;
+                            }
+                            Script script = Program.GetScript(search);
+                            if (script == null)
+                            {
+                                Sendchat(S_DARKBLUE + "No info found on this script.", channel);
+                                break;
+                            }
+                            DateTime timestamp = DateTime.Now.ToUniversalTime().AddHours(-1);
+                            string fileID = Program.GetFileIDForTimestamp(timestamp);
+                            int servers = Program.getlog(fileID).GetKeys(timestamp.Hour + "." + script.ID).Count;
+                            int rank = script.GetRank();
+                            Sendchat(S_DARKBLUE + "Script: " + S_CYAN + script.Name + S_DARKBLUE + " - Author: " + S_CYAN + script.Author + S_DARKBLUE + " - Rank: " + S_CYAN + rank +
+                                S_DARKBLUE + " - Servers: " + S_CYAN + servers + S_DARKBLUE +
+                                " - Link: http://one.denizenscript.com/denizen/repo/entry/" + script.ID, channel);
+                            break;
+                        }
+                    case "r":
+                    case "rank":
+                        {
+                            string search = commandargs.After(args[0] + " ").Trim();
+                            int result;
+                            if (int.TryParse(search, out result))
+                            {
+                                if (Program.sortedscripts.Count < result || result < 1)
+                                {
+                                    Sendchat(S_DARKBLUE + "There aren't this many scripts!", channel);
+                                }
+                                else
+                                {
+                                    Script script = Program.getpopular(999)[result - 1].Key;
+                                    DateTime timestamp = DateTime.Now.ToUniversalTime().AddHours(-1);
+                                    string fileID = Program.GetFileIDForTimestamp(timestamp);
+                                    int servers = Program.getlog(fileID).GetKeys(timestamp.Hour + "." + script.ID).Count;
+                                    Sendchat(S_DARKBLUE + "Script: " + S_CYAN + script.Name + S_DARKBLUE + " - Author: " + S_CYAN + script.Author + S_DARKBLUE + " - Rank: " + S_CYAN + result +
+                                        S_DARKBLUE + " - Servers: " + S_CYAN + servers + S_DARKBLUE +
+                                        " - Link: http://one.denizenscript.com/denizen/repo/entry/" + script.ID, channel);
+                                }
+                            }
+                            else
+                            {
+                                Sendchat(S_DARKBLUE + "This is not a valid rank!", channel);
+                            }
+                            break;
+                        }
+                    case "author":
+                    case "auth":
+                    case "au":
+                    case "a":
+                        {
+                            string search = commandargs.After(args[0] + " ").Trim();
+                            if (string.IsNullOrWhiteSpace(search))
+                            {
+                                Sendchat(S_DARKBLUE + "No author specified!", channel);
+                                break;
+                            }
+                            List<Script> scripts = Program.getScriptsByAuthor(search);
+                            if (scripts.Count == 0)
+                            {
+                                Sendchat(S_DARKBLUE + "No info found on this author.", channel);
+                                break;
+                            }
+                            StringBuilder result = new StringBuilder();
+                            int i = 0;
+                            int max = 10;
+                            if (scripts.Count < max)
+                            {
+                                max = scripts.Count;
+                            }
+                            foreach (Script script in scripts)
+                            {
+                                i++;
+                                result.Append(S_CYAN + script.Name);
+                                if (i < max - 1)
+                                {
+                                    result.Append(S_DARKBLUE + ", ");
+                                }
+                                else if (i < max)
+                                {
+                                    result.Append(S_DARKBLUE + ", and ");
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                            string end;
+                            if (scripts.Count > max)
+                            {
+                                int remainder = scripts.Count - max;
+                                end = S_GRAY + " (and " + remainder + " more!)";
+                            }
+                            else
+                            {
+                                end = ".";
+                            }
+                            Sendchat(S_DARKBLUE + search + " has written " + scripts.Count + " script(s): " + result + end, channel);
+                            break;
+                        }
+                    case "collect":
+                        {
+                            if (DateTime.Now.Subtract(CollectCooldown).TotalMinutes < 10)
+                            {
+                                Sendchat(S_DARKBLUE + "I already did this too recently!" + S_GRAY + " (10m cooldown)", channel);
+                                break;
+                            }
+                            CollectCooldown = DateTime.Now;
+                            Task.Factory.StartNew(() =>
+                            {
+                                Sendchat(S_DARKBLUE + "Reloading database from the script repository...", channel);
+                                KeyValuePair<int, int> result = Program.LoadDatabase();
+                                int amount = result.Key;
+                                int authors = result.Value;
+                                Sendchat(S_DARKBLUE + "Reloaded database. I now know of " + S_CYAN + amount + S_DARKBLUE + " scripts from "
+                                    + S_CYAN + authors + S_DARKBLUE + " authors.", channel);
+                            });
+                            break;
+                        }
+                    case "status":
+                        {
+                            int uptime = (int)Math.Floor(DateTime.UtcNow.Subtract(Program.StartTime).TotalMinutes);
+                            int ActiveScripts = 0;
+                            int pings = 0;
+                            foreach (Script script in Program.ScriptTable)
+                            {
+                                int scriptpings = Program.GetRTservers(script);
+                                if (scriptpings > 0)
+                                {
+                                    ActiveScripts++;
+                                    pings += scriptpings;
+                                }
+                            }
+                            Sendchat(S_DARKBLUE + "Uptime: " + S_CYAN + uptime + " min " + S_DARKBLUE + "- Scripts: " + S_CYAN + Program.ScriptTable.Count
+                                + S_DARKBLUE + " - Active Scripts: " + S_CYAN + ActiveScripts + S_DARKBLUE + " - Pings Per Hour: " + S_CYAN + pings, channel);
+                            break;
+                        }
+                    case "search":
+                        {
+                            string tagsearch = commandargs.After(args[0] + " ").ToLowerFast().Trim();
+                            if (tagsearch.Length <= 0)
+                            {
+                                Sendchat(S_DARKBLUE + "No tags were specified!", channel);
+                                break;
+                            }
+                            tagsearch = tagsearch.Trim();
+                            string[] tags = tagsearch.SplitFast(' ');
+                            List<KeyValuePair<Script, int>> matchlist = Program.GetScriptsByTags(tags);
+                            if (matchlist.Count == 0)
+                            {
+                                Sendchat(S_DARKBLUE + "No scripts were found with the tags '" + S_CYAN + tagsearch + S_DARKBLUE + "'.", channel);
+                                break;
+                            }
+                            StringBuilder result = new StringBuilder();
+                            int i = 0;
+                            int max = 5;
+                            if (matchlist.Count < max)
+                            {
+                                max = matchlist.Count;
+                            }
+                            foreach (KeyValuePair<Script, int> match in matchlist)
+                            {
+                                Script script = match.Key;
+                                i++;
+                                result.Append(S_CYAN + script.Name);
+                                if (i < max - 1)
+                                {
+                                    result.Append(S_DARKBLUE + ", ");
+                                }
+                                else if (i < max)
+                                {
+                                    result.Append(S_DARKBLUE + ", and ");
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                            Sendchat(S_DARKBLUE + "Possible results: " + result + ".", channel);
+                            break;
+                        }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+        }
+
+
+        static string StripColor(string inp)
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                inp = inp.Replace(C_S_COLOR + (i < 10 ? "0" + i : i.ToString()), "");
+            }
+            return inp.Replace(C_S_NORMAL.ToString(), "").Replace(C_S_BOLD.ToString(), "").Replace(C_S_UNDERLINE.ToString(), "");
+        }
+
+
         Object SocketLocker = new Object();
         public static Encoding UTF8 = new UTF8Encoding(false);
         public void SendCommand(string command, string data)
