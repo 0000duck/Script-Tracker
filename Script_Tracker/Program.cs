@@ -21,6 +21,7 @@ namespace Script_Tracker
             StartTime = DateTime.Now.ToUniversalTime();
             LoadDatabase();
 
+            /*
             Task.Factory.StartNew(() =>
             {
                 while (true)
@@ -36,6 +37,7 @@ namespace Script_Tracker
                     }
                 }
             });
+            */
             Task.Factory.StartNew(() =>
             {
                 while (true)
